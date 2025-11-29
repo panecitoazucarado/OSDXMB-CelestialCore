@@ -1,0 +1,480 @@
+<App Icon="SET_TIME" Category="1" Type="SUBMENU">
+  <Name>
+    <String str="Date and Time Settings" />
+    <String str="Paramètres date et heure" />
+    <String str="Ajustes de Fecha y Hora" />
+    <String str="Datums- und Zeit-Einstellungen" />
+    <String str="Impostazioni di data e ora" />
+    <String str="Datum- en tijdinstellingen" />
+    <String str="Definições de Data e Hora" />
+  </Name>
+  <Description>
+    <String str="Adjust date and time settings." />
+    <String str="Réglez les paramètres de date et d'heure." />
+    <String str="Ajusta la configuración de fecha y hora." />
+    <String str="Datum- und Uhrzeiteinstellungen anpassen." />
+    <String str="Regola le impostazioni di data e ora." />
+    <String str="Pas de instellingen voor datum en tijd aan." />
+    <String str="Ajuste as configurações de data e hora." />
+  </Description>
+  <Option Type="CONTEXT" Icon="SET_CFG" Default="{UserConfig.DateFormat}">
+    <Name>
+      <String str="Date Format" />
+      <String str="Affichage de la date" />
+      <String str="Formato de la fecha" />
+      <String str="Datumsdarstellung" />
+      <String str="Formato della data" />
+      <String str="Datumweergave" />
+      <String str="Formato da Data" />
+    </Name>
+    <Description>
+      <String str="Set the order of display." />
+      <String str="Pour définir l'ordre d'affichage." />
+      <String str="Permite ajustar el orden de visualización." />
+      <String str="Stellen Sie die Reihenfolge der Anzeige." />
+      <String str="Seleziona l'ordine di visualizzazione." />
+      <String str="Set the order of display." />
+      <String str="Define a ordem de apresentação." />
+    </Description>
+    <Component Name="DD-MM"/>
+    <Component Name="MM-DD"/>
+    <Confirm>
+      <![CDATA[
+        function(index, item) {
+            UserConfig.DateFormat = index;
+            CfgMan.PropertySet("main.cfg", "dateFormat", index.toString());
+        }
+      ]]>
+    </Confirm>
+  </Option>
+  <Option Type="CONTEXT" Icon="SET_CFG" Default="{UserConfig.HourFormat}">
+    <Name>
+      <String str="Time Format" />
+      <String str="Affichage de l'heure" />
+      <String str="Formato de Hora" />
+      <String str="Zeitdarstellung" />
+      <String str="Formato dell'ora" />
+      <String str="Tijdweergave" />
+      <String str="Formato da Hora" />
+    </Name>
+    <Description>
+      <String str="Set the time display format." />
+      <String str="Pour choisir d'afficher l'heure." />
+      <String str="Establece el tipo de reloj de 12 o 24 horas." />
+      <String str="Setze das Zeitfomat." />
+      <String str="Seleziona il formato dell'ora." />
+      <String str="De tijdweergave op een 12- of 24-uursklok instellen." />
+      <String str="Define a apresentação da hora em relógio de 12 ou de 24 horas." />
+    </Description>
+    <Component>
+      <Name>
+        <String str="12-Hour" />
+        <String str="12 heures" />
+        <String str="12 horas" />
+        <String str="12 Stunden" />
+        <String str="12 ore" />
+        <String str="12 uur" />
+        <String str="12 horas" />
+      </Name>
+    </Component>
+    <Component>
+      <Name>
+        <String str="24-Hour" />
+        <String str="24 heures" />
+        <String str="24 horas" />
+        <String str="24 Stunden" />
+        <String str="24 ore" />
+        <String str="24 uur" />
+        <String str="24 horas" />
+      </Name>
+    </Component>
+    <Confirm>
+      <![CDATA[
+        function(index, item) {
+            UserConfig.HourFormat = index;
+            CfgMan.PropertySet("main.cfg", "hourFormat", index.toString());
+        }
+      ]]>
+    </Confirm>
+  </Option>
+  <Option Type="CONTEXT" Icon="SET_CFG" Default="{UserConfig.Timezone}">
+    <Name>
+      <String str="Time Zone" />
+      <String str="Fuseau horaire" />
+      <String str="Zona horaria" />
+      <String str="Zeitzone" />
+      <String str="Fuso orario" />
+      <String str="Tijdzone" />
+      <String str="Fuso Horário" />
+    </Name>
+    <Component Name="{DEFAULT}" Value="0"/>
+    <Component Name="GMT-05:00 - La Paz" Value="-5"/>
+    <Component Name="GMT-05:00 - El Alto" Value="-5"/>
+    <Component Name="GMT-05:00 - Achocalla" Value="-5"/>
+    <Component Name="GMT-05:00 - Viacha" Value="-5"/>
+    <Component Name="GMT-05:00 - Batallas" Value="-5"/>
+    <Component Name="GMT-05:00 - Laja" Value="-5"/>
+    <Component Name="GMT-05:00 - Santa Cruz de la Sierra" Value="-5"/>
+    <Component Name="GMT-05:00 - Montero" Value="-5"/>
+    <Component Name="GMT-05:00 - Warnes" Value="-5"/>
+    <Component Name="GMT-05:00 - Cotoca" Value="-5"/>
+    <Component Name="GMT-05:00 - La Guardia" Value="-5"/>
+    <Component Name="GMT-05:00 - Porongo" Value="-5"/>
+    <Component Name="GMT-05:00 - San Jose de Chiquitos" Value="-5"/>
+    <Component Name="GMT-05:00 - San Ignacio de Velasco" Value="-5"/>
+    <Component Name="GMT-05:00 - Cochabamba" Value="-5"/>
+    <Component Name="GMT-05:00 - Sacaba" Value="-5"/>
+    <Component Name="GMT-05:00 - Quillacollo" Value="-5"/>
+    <Component Name="GMT-05:00 - Colcapirhua" Value="-5"/>
+    <Component Name="GMT-05:00 - Sipe Sipe" Value="-5"/>
+    <Component Name="GMT-05:00 - Tiquipaya" Value="-5"/>
+    <Component Name="GMT-05:00 - Tarija" Value="-5"/>
+    <Component Name="GMT-05:00 - Villa Montes" Value="-5"/>
+    <Component Name="GMT-05:00 - Yacuiba" Value="-5"/>
+    <Component Name="GMT-05:00 - Carapari" Value="-5"/>
+    <Component Name="GMT-05:00 - Bermejo" Value="-5"/>
+    <Component Name="GMT-05:00 - Potosi" Value="-5"/>
+    <Component Name="GMT-05:00 - Uyuni" Value="-5"/>
+    <Component Name="GMT-05:00 - Tupiza" Value="-5"/>
+    <Component Name="GMT-05:00 - Villazon" Value="-5"/>
+    <Component Name="GMT-05:00 - Oruro" Value="-5"/>
+    <Component Name="GMT-05:00 - Huanuni" Value="-5"/>
+    <Component Name="GMT-05:00 - Challapata" Value="-5"/>
+    <Component Name="GMT-05:00 - Caracollo" Value="-5"/>
+    <Component Name="GMT-05:00 - Trinidad" Value="-5"/>
+    <Component Name="GMT-05:00 - Riberalta" Value="-5"/>
+    <Component Name="GMT-05:00 - Guayaramerin" Value="-5"/>
+    <Component Name="GMT-05:00 - San Ignacio de Moxos" Value="-5"/>
+    <Component Name="GMT-05:00 - Cobija" Value="-5"/>
+    <Component Name="GMT-05:00 - Porvenir" Value="-5"/>
+    <Component Name="GMT-05:00 - Sucre" Value="-5"/>
+    <Component Name="GMT-05:00 - Camargo" Value="-5"/>
+    <Component Name="GMT-05:00 - Villa Serrano" Value="-5"/>
+    <Component Name="GMT-05:00 - Monteagudo" Value="-5"/>
+    <Component Name="GMT-05:00 - Padilla" Value="-5"/>
+    <Component Name="GMT-04:00 - Arica (Chile)" Value="-4"/>
+    <Component Name="GMT-04:00 - Iquique" Value="-4"/>
+    <Component Name="GMT-04:00 - Antofagasta" Value="-4"/>
+    <Component Name="GMT-04:00 - Copiapó" Value="-4"/>
+    <Component Name="GMT-04:00 - La Serena" Value="-4"/>
+    <Component Name="GMT-04:00 - Coquimbo" Value="-4"/>
+    <Component Name="GMT-04:00 - Valparaíso" Value="-4"/>
+    <Component Name="GMT-04:00 - Viña del Mar" Value="-4"/>
+    <Component Name="GMT-04:00 - Santiago" Value="-4"/>
+    <Component Name="GMT-04:00 - Rancagua" Value="-4"/>
+    <Component Name="GMT-04:00 - Talca" Value="-4"/>
+    <Component Name="GMT-04:00 - Chillán" Value="-4"/>
+    <Component Name="GMT-04:00 - Concepción" Value="-4"/>
+    <Component Name="GMT-04:00 - Temuco" Value="-4"/>
+    <Component Name="GMT-04:00 - Valdivia" Value="-4"/>
+    <Component Name="GMT-04:00 - Puerto Montt" Value="-4"/>
+    <Component Name="GMT-04:00 - Coyhaique" Value="-4"/>
+    <Component Name="GMT-04:00 - Punta Arenas" Value="-4"/>
+    <Component Name="GMT-08:00 - Tijuana (Mexico)" Value="-8"/>
+    <Component Name="GMT-08:00 - Ensenada" Value="-8"/>
+    <Component Name="GMT-08:00 - Mexicali" Value="-8"/>
+    <Component Name="GMT-08:00 - Tecate" Value="-8"/>
+    <Component Name="GMT-07:00 - Chihuahua" Value="-7"/>
+    <Component Name="GMT-07:00 - Juarez" Value="-7"/>
+    <Component Name="GMT-07:00 - Hermosillo" Value="-7"/>
+    <Component Name="GMT-07:00 - Culiacán" Value="-7"/>
+    <Component Name="GMT-07:00 - Mazatlán" Value="-7"/>
+    <Component Name="GMT-07:00 - Los Mochis" Value="-7"/>
+    <Component Name="GMT-07:00 - Tepic" Value="-7"/>
+    <Component Name="GMT-06:00 - Ciudad de Mexico" Value="-6"/>
+    <Component Name="GMT-06:00 - Guadalajara" Value="-6"/>
+    <Component Name="GMT-06:00 - Monterrey" Value="-6"/>
+    <Component Name="GMT-06:00 - Puebla" Value="-6"/>
+    <Component Name="GMT-06:00 - León" Value="-6"/>
+    <Component Name="GMT-06:00 - Toluca" Value="-6"/>
+    <Component Name="GMT-06:00 - Querétaro" Value="-6"/>
+    <Component Name="GMT-06:00 - Morelia" Value="-6"/>
+    <Component Name="GMT-06:00 - San Luis Potosí" Value="-6"/>
+    <Component Name="GMT-06:00 - Aguascalientes" Value="-6"/>
+    <Component Name="GMT-06:00 - Oaxaca" Value="-6"/>
+    <Component Name="GMT-06:00 - Veracruz" Value="-6"/>
+    <Component Name="GMT-06:00 - Mérida" Value="-6"/>
+    <Component Name="GMT-05:00 - Cancun" Value="-5"/>
+    <Component Name="GMT-05:00 - Chetumal" Value="-5"/>
+    <Component Name="GMT-05:00 - Playa del Carmen" Value="-5"/>
+    <Component Name="GMT-05:00 - Tulum" Value="-5"/>
+    <Component Name="GMT-05:00 - Cozumel" Value="-5"/>
+    <Component Name="GMT-03:00 - Buenos Aires (ARG)" Value="-3"/>
+    <Component Name="GMT-03:00 - Córdoba" Value="-3"/>
+    <Component Name="GMT-03:00 - Rosario" Value="-3"/>
+    <Component Name="GMT-03:00 - Mendoza" Value="-3"/>
+    <Component Name="GMT-03:00 - La Plata" Value="-3"/>
+    <Component Name="GMT-03:00 - San Miguel de Tucumán" Value="-3"/>
+    <Component Name="GMT-03:00 - Salta" Value="-3"/>
+    <Component Name="GMT-03:00 - Santa Fe" Value="-3"/>
+    <Component Name="GMT-03:00 - Mar del Plata" Value="-3"/>
+    <Component Name="GMT-03:00 - San Juan" Value="-3"/>
+    <Component Name="GMT-03:00 - Resistencia" Value="-3"/>
+    <Component Name="GMT-03:00 - Neuquén" Value="-3"/>
+    <Component Name="GMT-03:00 - Posadas" Value="-3"/>
+    <Component Name="GMT-03:00 - Bahía Blanca" Value="-3"/>
+    <Component Name="GMT-03:00 - Formosa" Value="-3"/>
+    <Component Name="GMT-03:00 - Río Gallegos" Value="-3"/>
+    <Component Name="GMT-03:00 - San Salvador de Jujuy" Value="-3"/>
+    <Component Name="GMT-03:00 - Corrientes" Value="-3"/>
+    <Component Name="GMT-03:00 - Santa Rosa" Value="-3"/>
+    <Component Name="GMT-03:00 - Ushuaia" Value="-3"/>
+    <Component Name="GMT-03:00 - Montevideo (Uruguay)" Value="-3"/>
+    <Component Name="GMT-03:00 - Salto" Value="-3"/>
+    <Component Name="GMT-03:00 - Paysandú" Value="-3"/>
+    <Component Name="GMT-03:00 - Las Piedras" Value="-3"/>
+    <Component Name="GMT-03:00 - Rivera" Value="-3"/>
+    <Component Name="GMT-03:00 - Maldonado" Value="-3"/>
+    <Component Name="GMT-03:00 - Tacuarembó" Value="-3"/>
+    <Component Name="GMT-03:00 - Melo" Value="-3"/>
+    <Component Name="GMT-03:00 - Mercedes" Value="-3"/>
+    <Component Name="GMT-03:00 - Artigas" Value="-3"/>
+    <Component Name="GMT-03:00 - Florida" Value="-3"/>
+    <Component Name="GMT-03:00 - Durazno" Value="-3"/>
+    <Component Name="GMT-03:00 - Rocha" Value="-3"/>
+    <Component Name="GMT-03:00 - Colonia del Sacramento" Value="-3"/>
+    <Component Name="GMT-03:00 - Trinidad (Uruguay)" Value="-3"/>
+    <Component Name="GMT-04:00 - Asunción (Paraguay)" Value="-4"/>
+    <Component Name="GMT-04:00 - Ciudad del Este" Value="-4"/>
+    <Component Name="GMT-04:00 - Luque" Value="-4"/>
+    <Component Name="GMT-04:00 - San Lorenzo" Value="-4"/>
+    <Component Name="GMT-04:00 - Lambaré" Value="-4"/>
+    <Component Name="GMT-04:00 - Fernando de la Mora" Value="-4"/>
+    <Component Name="GMT-04:00 - Capiatá" Value="-4"/>
+    <Component Name="GMT-04:00 - Encarnación" Value="-4"/>
+    <Component Name="GMT-04:00 - Pedro Juan Caballero" Value="-4"/>
+    <Component Name="GMT-04:00 - Coronel Oviedo" Value="-4"/>
+    <Component Name="GMT-04:00 - Caaguazú" Value="-4"/>
+    <Component Name="GMT-04:00 - Concepción" Value="-4"/>
+    <Component Name="GMT-04:00 - Villarrica" Value="-4"/>
+    <Component Name="GMT-04:00 - San Estanislao" Value="-4"/>
+    <Component Name="GMT-04:00 - Itauguá" Value="-4"/>
+    <Component Name="GMT-04:00 - Filadelfia" Value="-4"/>
+    <Component Name="GMT-05:00 - Rio Branco" Value="-5"/>
+    <Component Name="GMT-04:00 - Manaus" Value="-4"/>
+    <Component Name="GMT-04:00 - Porto Velho" Value="-4"/>
+    <Component Name="GMT-04:00 - Cuiabá" Value="-4"/>
+    <Component Name="GMT-04:00 - Campo Grande" Value="-4"/>
+    <Component Name="GMT-03:00 - Brasília" Value="-3"/>
+    <Component Name="GMT-03:00 - São Paulo" Value="-3"/>
+    <Component Name="GMT-03:00 - Rio de Janeiro" Value="-3"/>
+    <Component Name="GMT-03:00 - Salvador" Value="-3"/>
+    <Component Name="GMT-03:00 - Fortaleza" Value="-3"/>
+    <Component Name="GMT-03:00 - Belo Horizonte" Value="-3"/>
+    <Component Name="GMT-03:00 - Curitiba" Value="-3"/>
+    <Component Name="GMT-03:00 - Recife" Value="-3"/>
+    <Component Name="GMT-03:00 - Porto Alegre" Value="-3"/>
+    <Component Name="GMT-03:00 - Belém" Value="-3"/>
+    <Component Name="GMT-03:00 - Goiânia" Value="-3"/>
+    <Component Name="GMT-03:00 - São Luís" Value="-3"/>
+    <Component Name="GMT-03:00 - Maceió" Value="-3"/>
+    <Component Name="GMT-03:00 - Natal" Value="-3"/>
+    <Component Name="GMT-03:00 - Teresina" Value="-3"/>
+    <Component Name="GMT-02:00 - Fernando de Noronha" Value="-2"/>
+    <Component Name="GMT-02:00 - Trindade" Value="-2"/>
+    <Component Name="GMT-05:00 - Lima (Perú)" Value="-5"/>
+    <Component Name="GMT-05:00 - Arequipa" Value="-5"/>
+    <Component Name="GMT-05:00 - Trujillo" Value="-5"/>
+    <Component Name="GMT-05:00 - Chiclayo" Value="-5"/>
+    <Component Name="GMT-05:00 - Piura" Value="-5"/>
+    <Component Name="GMT-05:00 - Cusco" Value="-5"/>
+    <Component Name="GMT-05:00 - Iquitos" Value="-5"/>
+    <Component Name="GMT-05:00 - Chimbote" Value="-5"/>
+    <Component Name="GMT-05:00 - Huancayo" Value="-5"/>
+    <Component Name="GMT-05:00 - Puno" Value="-5"/>
+    <Component Name="GMT-05:00 - Tacna" Value="-5"/>
+    <Component Name="GMT-05:00 - Cajamarca" Value="-5"/>
+    <Component Name="GMT-05:00 - Tumbes" Value="-5"/>
+    <Component Name="GMT-05:00 - Ayacucho" Value="-5"/>
+    <Component Name="GMT-05:00 - Ica" Value="-5"/>
+    <Component Name="GMT-05:00 - Huánuco" Value="-5"/>
+    <Component Name="GMT-05:00 - Bogotá" Value="-5"/>
+    <Component Name="GMT-05:00 - Medellín" Value="-5"/>
+    <Component Name="GMT-05:00 - Cali" Value="-5"/>
+    <Component Name="GMT-05:00 - Barranquilla" Value="-5"/>
+    <Component Name="GMT-05:00 - Cartagena" Value="-5"/>
+    <Component Name="GMT-05:00 - Cúcuta" Value="-5"/>
+    <Component Name="GMT-05:00 - Bucaramanga" Value="-5"/>
+    <Component Name="GMT-05:00 - Pereira" Value="-5"/>
+    <Component Name="GMT-05:00 - Santa Marta" Value="-5"/>
+    <Component Name="GMT-05:00 - Ibagué" Value="-5"/>
+    <Component Name="GMT-05:00 - Manizales" Value="-5"/>
+    <Component Name="GMT-05:00 - Villavicencio" Value="-5"/>
+    <Component Name="GMT-05:00 - Neiva" Value="-5"/>
+    <Component Name="GMT-05:00 - Pasto" Value="-5"/>
+    <Component Name="GMT-05:00 - Sincelejo (Colombia)" Value="-5"/>
+    <Component Name="GMT-05:00 - Quito (Ecuador)" Value="-5"/>
+    <Component Name="GMT-05:00 - Guayaquil" Value="-5"/>
+    <Component Name="GMT-05:00 - Cuenca" Value="-5"/>
+    <Component Name="GMT-05:00 - Santo Domingo" Value="-5"/>
+    <Component Name="GMT-05:00 - Machala" Value="-5"/>
+    <Component Name="GMT-05:00 - Durán" Value="-5"/>
+    <Component Name="GMT-05:00 - Manta" Value="-5"/>
+    <Component Name="GMT-05:00 - Portoviejo" Value="-5"/>
+    <Component Name="GMT-05:00 - Loja" Value="-5"/>
+    <Component Name="GMT-05:00 - Ambato" Value="-5"/>
+    <Component Name="GMT-05:00 - Esmeraldas" Value="-5"/>
+    <Component Name="GMT-05:00 - Riobamba" Value="-5"/>
+    <Component Name="GMT-05:00 - Quevedo" Value="-5"/>
+    <Component Name="GMT-05:00 - Ibarra" Value="-5"/>
+    <Component Name="GMT-05:00 - Latacunga" Value="-5"/>
+    <Component Name="GMT-06:00 - Puerto Ayora" Value="-6"/>
+    <Component Name="GMT-06:00 - Puerto Baquerizo Moreno" Value="-6"/>
+    <Component Name="GMT-05:00 - Ciudad de Panamá" Value="-5"/>
+    <Component Name="GMT-05:00 - Colón" Value="-5"/>
+    <Component Name="GMT-05:00 - David" Value="-5"/>
+    <Component Name="GMT-05:00 - Santiago" Value="-5"/>
+    <Component Name="GMT-05:00 - La Chorrera" Value="-5"/>
+    <Component Name="GMT-05:00 - Penonomé" Value="-5"/>
+    <Component Name="GMT-05:00 - Chitré" Value="-5"/>
+    <Component Name="GMT-05:00 - Aguadulce" Value="-5"/>
+    <Component Name="GMT-05:00 - Veraguas" Value="-5"/>
+    <Component Name="GMT-05:00 - Bocas del Toro" Value="-5"/>
+    <Component Name="GMT-05:00 - Boquete" Value="-5"/>
+    <Component Name="GMT-05:00 - Darién (La Palma)" Value="-5"/>
+    <Component Name="GMT-06:00 - San Salvador" Value="-6"/>
+    <Component Name="GMT-06:00 - Santa Ana" Value="-6"/>
+    <Component Name="GMT-06:00 - San Miguel" Value="-6"/>
+    <Component Name="GMT-06:00 - Soyapango" Value="-6"/>
+    <Component Name="GMT-06:00 - Mejicanos" Value="-6"/>
+    <Component Name="GMT-06:00 - Santa Tecla" Value="-6"/>
+    <Component Name="GMT-06:00 - Apopa" Value="-6"/>
+    <Component Name="GMT-06:00 - Delgado" Value="-6"/>
+    <Component Name="GMT-06:00 - Ilopango" Value="-6"/>
+    <Component Name="GMT-06:00 - Zacatecoluca" Value="-6"/>
+    <Component Name="GMT-06:00 - La Libertad" Value="-6"/>
+    <Component Name="GMT-06:00 - Ahuachapán" Value="-6"/>
+    <Component Name="GMT-06:00 - Usulután" Value="-6"/>
+    <Component Name="GMT-06:00 - Sonsonate" Value="-6"/>
+    <Component Name="GMT-06:00 - San Vicente" Value="-6"/>
+    <Component Name="GMT-06:00 - La Unión" Value="-6"/>
+    <Component Name="GMT-11:00 - Pago Pago" Value="-11"/>
+    <Component Name="GMT-10:00 - Honolulu" Value="-10"/>
+    <Component Name="GMT-09:00 - Anchorage" Value="-9"/>
+    <Component Name="GMT-08:00 - Los Angeles" Value="-8"/>
+    <Component Name="GMT-08:00 - San Francisco" Value="-8"/>
+    <Component Name="GMT-08:00 - Seattle" Value="-8"/>
+    <Component Name="GMT-08:00 - San Diego" Value="-8"/>
+    <Component Name="GMT-08:00 - Portland" Value="-8"/>
+    <Component Name="GMT-08:00 - Las Vegas" Value="-8"/>
+    <Component Name="GMT-08:00 - Sacramento" Value="-8"/>
+    <Component Name="GMT-08:00 - Fresno" Value="-8"/>
+    <Component Name="GMT-08:00 - Oakland" Value="-8"/>
+    <Component Name="GMT-08:00 - Long Beach" Value="-8"/>
+    <Component Name="GMT-07:00 - Denver" Value="-7"/>
+    <Component Name="GMT-07:00 - Phoenix" Value="-7"/>
+    <Component Name="GMT-07:00 - Colorado Springs" Value="-7"/>
+    <Component Name="GMT-07:00 - Albuquerque" Value="-7"/>
+    <Component Name="GMT-07:00 - Boise" Value="-7"/>
+    <Component Name="GMT-07:00 - El Paso" Value="-7"/>
+    <Component Name="GMT-07:00 - Salt Lake City" Value="-7"/>
+    <Component Name="GMT-07:00 - Tucson" Value="-7"/>
+    <Component Name="GMT-06:00 - Chicago" Value="-6"/>
+    <Component Name="GMT-06:00 - Dallas" Value="-6"/>
+    <Component Name="GMT-06:00 - Houston" Value="-6"/>
+    <Component Name="GMT-06:00 - Austin" Value="-6"/>
+    <Component Name="GMT-06:00 - Minneapolis" Value="-6"/>
+    <Component Name="GMT-06:00 - Kansas City" Value="-6"/>
+    <Component Name="GMT-06:00 - Milwaukee" Value="-6"/>
+    <Component Name="GMT-06:00 - Memphis" Value="-6"/>
+    <Component Name="GMT-06:00 - Nashville" Value="-6"/>
+    <Component Name="GMT-06:00 - Omaha" Value="-6"/>
+    <Component Name="GMT-05:00 - New York" Value="-5"/>
+    <Component Name="GMT-05:00 - Washington D.C." Value="-5"/>
+    <Component Name="GMT-05:00 - Miami" Value="-5"/>
+    <Component Name="GMT-05:00 - Boston" Value="-5"/>
+    <Component Name="GMT-05:00 - Philadelphia" Value="-5"/>
+    <Component Name="GMT-05:00 - Atlanta" Value="-5"/>
+    <Component Name="GMT-05:00 - Charlotte" Value="-5"/>
+    <Component Name="GMT-05:00 - Detroit" Value="-5"/>
+    <Component Name="GMT-05:00 - Baltimore" Value="-5"/>
+    <Component Name="GMT-05:00 - Indianapolis" Value="-5"/>
+    <Component Name="GMT-04:00 - Puerto Rico" Value="-4"/>
+    <Component Name="GMT-04:00 - Virgin Islands" Value="-4"/>
+    <Component Name="GMT-04:00 - Orlando" Value="-4"/>
+    <Component Name="GMT-04:00 - Tampa" Value="-4"/>
+    <Component Name="GMT-04:00 - Fort Lauderdale" Value="-4"/>
+    <Component Name="GMT-04:00 - Richmond" Value="-4"/>
+    <Component Name="GMT-04:00 - New Orleans" Value="-4"/>
+    <Component Name="GMT-06:00 - Central (Can)" Value="-6"/>
+    <Component Name="GMT-06:00 - Easter Island" Value="-6"/>
+    <Component Name="GMT-11:00 - Midway Islands" Value="-11"/>
+    <Component Name="GMT-05:00 - East. (Can)" Value="-5"/>
+    <Component Name="GMT-04:00 - Atlan. (Can)" Value="-4"/>
+    <Component Name="GMT-03:30 - Newfoundland" Value="-3.5"/>
+    <Component Name="GMT-03:00 - NW Greenland" Value="-3"/>
+    <Component Name="GMT-03:00 - SW Greenland" Value="-3"/>
+    <Component Name="GMT-02:00 - E Greenland" Value="-2"/>
+    <Component Name="GMT-01:00 - Praia" Value="-1"/>
+    <Component Name="GMT+00:00 - Reykjavik" Value="0"/>
+    <Component Name="GMT+00:00 - Dublin" Value="0"/>
+    <Component Name="GMT+00:00 - Casablanca" Value="0"/>
+    <Component Name="GMT+01:00 - Tirana" Value="1"/>
+    <Component Name="GMT+01:00 - Algiers" Value="1"/>
+    <Component Name="GMT+01:00 - Andorra la Vella" Value="1"/>
+    <Component Name="GMT+01:00 - Vienna" Value="1"/>
+    <Component Name="GMT+01:00 - Brussels" Value="1"/>
+    <Component Name="GMT+01:00 - Sarajevo" Value="1"/>
+    <Component Name="GMT+01:00 - Zagreb" Value="1"/>
+    <Component Name="GMT+01:00 - Prague" Value="1"/>
+    <Component Name="GMT+01:00 - Copenhagen" Value="1"/>
+    <Component Name="GMT+01:00 - Berlin" Value="1"/>
+    <Component Name="GMT+01:00 - Gibraltar" Value="1"/>
+    <Component Name="GMT+01:00 - Budapest" Value="1"/>
+    <Component Name="GMT+01:00 - Paris" Value="1"/>
+    <Component Name="GMT+01:00 - Rome" Value="1"/>
+    <Component Name="GMT+01:00 - Vaduz" Value="1"/>
+    <Component Name="GMT+01:00 - Monaco" Value="1"/>
+    <Component Name="GMT+01:00 - Amsterdam" Value="1"/>
+    <Component Name="GMT+01:00 - Luxembourg" Value="1"/>
+    <Component Name="GMT+01:00 - Skopje" Value="1"/>
+    <Component Name="GMT+01:00 - Valletta" Value="1"/>
+    <Component Name="GMT+02:00 - Sofia" Value="2"/>
+    <Component Name="GMT+02:00 - Nicosia" Value="2"/>
+    <Component Name="GMT+02:00 - Cairo" Value="2"/>
+    <Component Name="GMT+02:00 - Tallinn" Value="2"/>
+    <Component Name="GMT+02:00 - Helsinki" Value="2"/>
+    <Component Name="GMT+02:00 - Jerusalem" Value="2"/>
+    <Component Name="GMT+02:00 - Amman" Value="2"/>
+    <Component Name="GMT+02:00 - Riga" Value="2"/>
+    <Component Name="GMT+02:00 - Beirut" Value="2"/>
+    <Component Name="GMT+02:00 - Vilnius" Value="2"/>
+    <Component Name="GMT+02:00 - Windhoek" Value="2"/>
+    <Component Name="GMT+03:00 - Manama" Value="3"/>
+    <Component Name="GMT+03:00 - Minsk" Value="3"/>
+    <Component Name="GMT+03:00 - Baghdad" Value="3"/>
+    <Component Name="GMT+03:00 - Kuwait City" Value="3"/>
+    <Component Name="GMT+03:30 - Tehran" Value="3.5"/>
+    <Component Name="GMT+04:00 - Yerevan" Value="4"/>
+    <Component Name="GMT+04:00 - Baku" Value="4"/>
+    <Component Name="GMT+04:00 - Tbilisi" Value="4"/>
+    <Component Name="GMT+04:30 - Kabul" Value="4.5"/>
+    <Component Name="GMT+05:00 - W Kazakhstan" Value="5"/>
+    <Component Name="GMT+05:30 - Calcutta" Value="5.5"/>
+    <Component Name="GMT+05:45 - Kathmandu" Value="5.75"/>
+    <Component Name="GMT+06:00 - Dhaka" Value="6"/>
+    <Component Name="GMT+06:00 - C Kazakhstan" Value="6"/>
+    <Component Name="GMT+06:00 - Bishkek" Value="6"/>
+    <Component Name="GMT+07:00 - E Kazakhstan" Value="7"/>
+    <Component Name="GMT+08:00 - Perth" Value="8"/>
+    <Component Name="GMT+08:00 - Beijing" Value="8"/>
+    <Component Name="GMT+09:00 - Tokyo" Value="9"/>
+    <Component Name="GMT+10:00 - Sydney" Value="10"/>
+    <Component Name="GMT+10:30 - Lord Howe I." Value="10.5"/>
+    <Component Name="GMT+11:00 - New Caledonia" Value="11"/>
+    <Component Name="GMT+12:00 - Suva" Value="12"/>
+    <Component Name="GMT+13:00 - Wellington" Value="13"/>
+    <Confirm>
+      <![CDATA[
+        function(index, item) {
+            UserConfig.Timezone = index;
+            gTimezone = item.Value;
+            let config = CfgMan.Get("main.cfg");
+            config["timezone"] = index.toString();
+            config["gTimezone"] = gTimezone.toString();
+            CfgMan.Push("main.cfg", config);
+        }
+      ]]>
+    </Confirm>
+  </Option>
+</App>

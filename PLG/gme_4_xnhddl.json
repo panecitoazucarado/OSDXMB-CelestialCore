@@ -1,0 +1,16 @@
+{
+  "Name": "nHddLauncher",
+  "Description": "mmce-hdl-4-19",
+  "Icon": "TOOL",
+  "Category": 6,
+  "Type": "ELF",
+  "Value": {
+    "Path": [
+      "{cwd}/APPS/APP_NHDDL/nhddl.elf",
+      "mc?:/APP_NHDDL/nhddl.elf",
+      "mass?:/APPS/APP_NHDDL/nhddl.elf"
+    ],
+    "Args": []
+  },
+  "CustomIcon": "{cwd}/APPS/APP_NHDDL/ico.png"
+}

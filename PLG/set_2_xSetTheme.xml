@@ -1,0 +1,347 @@
+<App Type="SUBMENU" Category="1" Icon="SET_THEME" Name="{THMSET0.NAME}" Description="{THMSET0.DESC}">
+  <Option Type="CONTEXT" Icon="SET_CFG" Name="{THMSET1.NAME}" Description="{THMSET1.DESC}">
+	  <Default>
+      <![CDATA[
+		    const Items = [];
+		    Items.push("Original");
+
+		    const sortedDirectories = System.listDir(PATHS.Theme)
+			    .filter((item) => item.name !== "." && item.name !== ".." && item.name !== "Original" && item.dir) // Exclude "." and ".." and keep only directories
+			    .sort((a, b) => a.name.localeCompare(b.name));
+
+		    for (let i = 0; i < sortedDirectories.length; i++) { Items.push(sortedDirectories[i].name); }
+		    let index = Items.indexOf(UserConfig.Theme);
+		    return (index > -1) ? index : 0;
+      ]]>
+	  </Default>
+	  <Components>
+      <![CDATA[
+        // Cachear la lista de temas para evitar recargar en cada navegación (caché persistente)
+        if (!globalThis._ThemeListCache) {
+          const Items = [];
+          Items.push({Name: "Original", Icon: -1});
+
+          const sortedDirectories = System.listDir(PATHS.Theme)
+            .filter((item) => item.name !== "." && item.name !== ".." && item.name !== "Original" && item.dir)
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          // Optimizado: hacer todas las verificaciones de una vez sin bloquear el mutex repetidamente
+          MainMutex.unlock();
+          try {
+            for (let i = 0; i < sortedDirectories.length; i++) {
+              const item = sortedDirectories[i];
+              const themePath = `${PATHS.Theme}${item.name}/`;
+              let ico = -1;
+              let previewImg = null;
+              
+              // Usar std.exists() - mucho más rápido que os.readdir()
+              try {
+                const iconPath = `${themePath}thmico.png`;
+                if (std.exists(iconPath)) {
+                  ico = iconPath;
+                }
+              } catch (e) {
+                // Ignorar errores individuales
+              }
+              
+              try {
+                const previewPath = `${themePath}thmprw.png`;
+                if (std.exists(previewPath)) {
+                  previewImg = previewPath;
+                }
+              } catch (e) {
+                // Ignorar errores individuales
+              }
+              
+              const themeItem = { Name: item.name, Icon: ico };
+              if (previewImg) {
+                themeItem.PreviewImage = previewImg;
+              }
+              Items.push(themeItem);
+            }
+          } catch (e) {
+            // Si falla completamente, usar método alternativo
+            try {
+              for (let i = 0; i < sortedDirectories.length; i++) {
+                const item = sortedDirectories[i];
+                const themePath = `${PATHS.Theme}${item.name}/`;
+                let ico = -1;
+                let previewImg = null;
+                
+                try {
+                  const dirFiles = os.readdir(themePath)[0];
+                  if (dirFiles && dirFiles.includes("thmico.png")) {
+                    ico = `${themePath}thmico.png`;
+                  }
+                  if (dirFiles && dirFiles.includes("thmprw.png")) {
+                    previewImg = `${themePath}thmprw.png`;
+                  }
+                } catch (e2) {
+                  // Ignorar errores
+                }
+                
+                const themeItem = { Name: item.name, Icon: ico };
+                if (previewImg) {
+                  themeItem.PreviewImage = previewImg;
+                }
+                Items.push(themeItem);
+              }
+            } catch (e3) {
+              // Ignorar errores finales
+            }
+          }
+          MainMutex.lock();
+          
+          globalThis._ThemeListCache = Items;
+        }
+        
+        return globalThis._ThemeListCache;
+      ]]>
+	  </Components>
+    <Confirm>
+      <![CDATA[
+        function(index, item) {
+          if (item.Name === UserConfig.Theme) { return; }
+		      UserConfig.Theme = item.Name;
+          CfgMan.PropertySet("main.cfg", "Theme", UserConfig.Theme);
+          // Invalidar caché para forzar recarga si es necesario
+          delete globalThis._ThemeListCache;
+		      DashUISetDialog(DashUI.Context.ItemCollection[DashUI.Context.Level].Dialog);
+        }
+      ]]>
+    </Confirm>
+    <Dialog Icon="9" Title="{THMSET1.NAME}" BG="false" Type="TEXT" Text="{WAIT}" >
+      <Task>
+        <![CDATA[
+						function() {
+              // Limpiar recursos del tema anterior primero (sin liberar memoria explícitamente)
+              CleanThemeLayers();
+              DisableCustomBgImg();
+              
+              // Cargar nuevos elementos del tema
+              DashCustomizableElementsInit();
+              DashUICustomizationInit();
+              
+              // Resetear configuraciones
+              UserConfig.BgColor = 0;
+              BgElements.BgColor.Next = UserConfig.BgColor;
+              BgElements.BgColor.Progress = 0.0f;
+              DashElements.ItemFocus = false;
+
+              // Cargar iconos del nuevo tema (versión segura para consola física)
+              if (DashIconsInfo && Array.isArray(DashIconsInfo) && DashIconsInfo.length > 0) {
+                // Asegurar que DashIcons tenga el tamaño correcto
+                if (!DashIcons || DashIcons.length !== DashIconsInfo.length) {
+                  DashIcons.length = DashIconsInfo.length;
+                }
+                
+                for (let i = 0; i < DashIconsInfo.length; i++) {
+                  // Verificar que el elemento de info existe y tiene path
+                  if (!DashIconsInfo[i] || typeof DashIconsInfo[i] !== 'object' || !DashIconsInfo[i].path) {
+                    continue;
+                  }
+                  
+                  const path = `${PATHS.Theme}${UserConfig.Theme}/icons/${DashIconsInfo[i].path}`;
+                  let icn = null;
+                  
+                  // Usar MainMutex solo para operaciones de I/O
+                  MainMutex.unlock();
+                  try {
+                    if (std.exists(path)) {
+                      icn = new Image(path);
+                    } else {
+                      const fallbackPath = `${PATHS.Theme}Original/icons/${DashIconsInfo[i].path}`;
+                      if (std.exists(fallbackPath)) {
+                        icn = new Image(fallbackPath);
+                      }
+                    }
+                  } catch (e) {
+                    // Error silencioso para no bloquear
+                    icn = null;
+                  }
+                  MainMutex.lock();
+                  
+                  // Optimizar solo si la imagen se cargó correctamente
+                  if (icn) {
+                    try {
+                      icn.optimize();
+                      icn.filter = LINEAR;
+                    } catch (e) {
+                      // Si falla la optimización, continuar sin ella
+                    }
+                  }
+                  
+                  DashIcons[i] = icn;
+                }
+              }
+
+              // Cargar script del tema
+              let thmival = os.setInterval(() => {
+                try {
+                  FontInit();
+                  const thm = `${PATHS.Theme}${UserConfig.Theme}/thm.js`;
+                  if (std.exists(thm)) {
+                    std.loadScript(thm);
+                  }
+                } catch (e) {
+                  // Error silencioso
+                }
+                os.clearInterval(thmival);
+              }, 0);
+
+              UIAnimationDialogFade_Start(false);
+						}
+					]]>
+      </Task>
+    </Dialog>
+  </Option>
+  <Option Type="CONTEXT" Icon="SET_CFG" Name="{THMSET2.NAME}" Description="{THMSET2.DESC}">
+    <Component Name="{ORIGINAL}" />
+    <Component Icon="{cwd}XMB/color/ico1.png" />
+    <Component Icon="{cwd}XMB/color/ico2.png" />
+    <Component Icon="{cwd}XMB/color/ico3.png" />
+    <Component Icon="{cwd}XMB/color/ico4.png" />
+    <Component Icon="{cwd}XMB/color/ico5.png" />
+    <Component Icon="{cwd}XMB/color/ico6.png" />
+    <Component Icon="{cwd}XMB/color/ico7.png" />
+    <Component Icon="{cwd}XMB/color/ico8.png" />
+    <Component Icon="{cwd}XMB/color/ico9.png" />
+    <Component Icon="{cwd}XMB/color/ico10.png" />
+    <Component Icon="{cwd}XMB/color/ico11.png" />
+    <Component Icon="{cwd}XMB/color/ico12.png" />
+    <Component Icon="{cwd}XMB/color/ico13.png" />
+    <Default Variable="UserConfig.BgColor" />
+    <Preview>
+      <![CDATA[
+        function(index, item) {
+			    const ival = os.setInterval(() => {
+				    if (DashUI.State.Current !== 3) { os.clearInterval(ival); }
+				    else if (BgElements.BgColor.Next === BgElements.BgColor.Current) {
+					    BgElements.BgColor.Next = index;
+					    BgElements.BgColor.Progress = 0.0f;
+					    os.clearInterval(ival);
+				    }
+			    }, 0);
+        }
+      ]]>
+    </Preview>
+    <Confirm>
+      <![CDATA[
+        function(index, item) {
+			    if ((BgElements.BgColor.Next === BgElements.BgColor.Current) && (BgElements.BgColor.Next !== index)) {
+				    BgElements.BgColor.Current = BgElements.BgColor.Next;
+				    BgElements.BgColor.Next = index;
+				    BgElements.BgColor.Progress = 0.0f;
+			    }
+			    BgElements.BgColor.Previous = index;
+			    UserConfig.BgColor = index;
+          CfgMan.PropertySet("main.cfg", "BgColor", UserConfig.BgColor.toString());
+        }
+      ]]>
+    </Confirm>
+    <Cancel>
+      <![CDATA[
+        function(index, item) {
+			    if (BgElements.BgColor.Next !== BgElements.BgColor.Previous) {
+				    BgElements.BgColor.Current = BgElements.BgColor.Next;
+				    BgElements.BgColor.Next = BgElements.BgColor.Previous;
+				    BgElements.BgColor.Progress = 0.0f;
+			    }
+        }
+      ]]>
+    </Cancel>
+  </Option>
+  <Option Type="CONTEXT" Icon="SET_CFG" Name="{THMSET3.NAME}" Description="{THMSET3.DESC}">
+    <Component Name="{ORIGINAL}"/>
+    <Component Name="{WALLPAPER}" Icon="-1"/>
+    <Default Variable="UserConfig.DisplayBg" />
+    <Dialog Icon="9" Title="{WALLPAPER}" BG="true" Type="TEXT" Text="{NOWPP_MSG}" BackBtn="true"/>
+    <Confirm>
+      <![CDATA[
+        function(index, item) {
+          UserConfig.DisplayBg = false;
+          if ((index == 1) && (!UserConfig.CustomBgImg)) {
+              DashUISetDialog(DashUI.Context.ItemCollection[DashUI.Context.Level].Dialog);
+              return false;
+          }
+          else if ((index == 1) && (UserConfig.CustomBgImg)) { SetNewCustomBgImg(UserConfig.CustomBgImg); }
+          CfgMan.PropertySet("main.cfg", "displayBg", UserConfig.DisplayBg.toString());
+        }
+      ]]>
+    </Confirm>
+  </Option>
+  <Option Type="SUBMENU" Icon="SET_CFG" Name="{THMSET4.NAME}" Description="{THMSET4.DESC}">
+    <Option Type="CONTEXT" Icon="SET_CFG" Name="{EFFECTS_WAVES.NAME}" Description="{EFFECTS_WAVES.DESC}">
+      <Component Name="{NO}" Icon="-1" />
+      <Component Name="{YES}" Icon="-1" />
+      <Default>
+        <![CDATA[
+          // Get enabled state from EffectsManager or UserConfig
+          if (typeof EffectsManager !== 'undefined' && EffectsManager.IsEnabled) {
+            return EffectsManager.IsEnabled('waves') ? 1 : 0;
+          }
+          // Fallback for backward compatibility
+          return (typeof UserConfig !== 'undefined' && UserConfig.Waves) ? 1 : 0;
+        ]]>
+      </Default>
+      <Confirm>
+        <![CDATA[
+          function(index, item) {
+            const enabled = (index == 1);
+            
+            // Use EffectsManager if available
+            if (typeof EffectsManager !== 'undefined' && EffectsManager.SetEnabled) {
+              EffectsManager.SetEnabled('waves', enabled);
+            }
+            
+            // Update UserConfig for backward compatibility
+            if (typeof UserConfig !== 'undefined') {
+              UserConfig.Waves = enabled;
+              UserConfig.Effect_waves = enabled;
+              
+              if (typeof CfgMan !== 'undefined' && CfgMan) {
+                CfgMan.PropertySet("main.cfg", "waves", enabled.toString());
+                CfgMan.PropertySet("main.cfg", "effect_waves", enabled.toString());
+              }
+            }
+          }
+        ]]>
+      </Confirm>
+    </Option>
+    <Option Type="CONTEXT" Icon="SET_CFG" Name="{EFFECTS_MATRIX.NAME}" Description="{EFFECTS_MATRIX.DESC}">
+      <Component Name="{NO}" Icon="-1" />
+      <Component Name="{YES}" Icon="-1" />
+      <Default>
+        <![CDATA[
+          // Get enabled state from EffectsManager or UserConfig
+          if (typeof EffectsManager !== 'undefined' && EffectsManager.IsEnabled) {
+            return EffectsManager.IsEnabled('matrix') ? 1 : 0;
+          }
+          // Fallback
+          return (typeof UserConfig !== 'undefined' && UserConfig.Effect_matrix) ? 1 : 0;
+        ]]>
+      </Default>
+      <Confirm>
+        <![CDATA[
+          function(index, item) {
+            const enabled = (index == 1);
+            
+            // Use EffectsManager if available
+            if (typeof EffectsManager !== 'undefined' && EffectsManager.SetEnabled) {
+              EffectsManager.SetEnabled('matrix', enabled);
+            }
+            
+            // Update UserConfig
+            if (typeof UserConfig !== 'undefined') {
+              UserConfig.Effect_matrix = enabled;
+              
+              if (typeof CfgMan !== 'undefined' && CfgMan) {
+                CfgMan.PropertySet("main.cfg", "effect_matrix", enabled.toString());
+              }
+            }
+          }
+        ]]>
+      </Confirm>
+    </Option>
+  </Option>
+</App>

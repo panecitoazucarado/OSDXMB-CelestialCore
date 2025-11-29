@@ -1,0 +1,330 @@
+<App Type="SUBMENU" Category="2" Icon="FOLDER">
+  <Name>
+    <String str="Image Viewer" />
+    <String str="Visionneuse d'images" />
+    <String str="Visualizador de Imágenes" />
+    <String str="Bildbetrachter" />
+    <String str="Visualizzatore di immagini" />
+    <String str="Afbeeldingviewer" />
+    <String str="Visualizador de imagens" />
+  </Name>
+  <Options Type="Explorer" ExtensionFilter="png, jpg, bmp, gif" DeviceFilter="Memory Card" />
+  <Script Name="PhotoViewer" Type="OptionValue" Condition="extensionMatches(DashUI.SelectedItem.Name, [ 'png', 'jpg', 'bmp', 'gif' ])">
+    <Code>
+      <![CDATA[
+        function()	{
+          Viewer.Open(DashUI.SelectedItem.FullPath);
+          return;
+          let prevState = DashUI.State.Current;
+          DashUI.State.Current = 9;
+          DashUI.State.Next = 9;
+          DashUI.State.Previous = 9;
+          if (typeof SetDashPadEvents !== 'undefined') { SetDashPadEvents(9); }
+          DashUI.AnimationQueue.push(() => {
+            DashUI.Overlay.Alpha += 16;
+            if (DashUI.Overlay.Alpha >= 128) { return true; }
+            return false;
+          });
+
+          const ext = getFileExtension(DashUI.SelectedItem.Name).toLowerCase();
+          if (ext === "gif") {
+            StartGifViewer(DashUI.SelectedItem.FullPath, prevState);
+            return;
+          }
+          let Photo = new Image(DashUI.SelectedItem.FullPath);
+          Photo.optimize();
+          Photo.filter = LINEAR;
+
+          // Dimensiones originales de la imagen
+          let iw = Photo.width;
+          let ih = Photo.height;
+
+          // Calcular escala inicial para ajustar a pantalla
+          let scaleW = ScrCanvas.width / iw;
+          let scaleH = ScrCanvas.height / ih;
+          let scale = (scaleW < scaleH) ? scaleW : scaleH;
+
+          // Variables de zoom y navegación
+          let zoom = 1.0;
+          let zoomObjetivo = 1.0;
+          let offsetX = 0;
+          let offsetY = 0;
+          let offsetXObjetivo = 0;
+          let offsetYObjetivo = 0;
+          let mostrarControles = true;
+          let tiempoControles = 0;
+          const ZOOM_MIN = 0.5;
+          const ZOOM_MAX = 5.0;
+          const ZOOM_VELOCIDAD = 0.05; // Más suave
+          const NAVEGACION_VELOCIDAD_PAD = 4.0; // Velocidad con pad direccional
+          const NAVEGACION_VELOCIDAD_ANALOGICO = 3.5; // Velocidad con analógico
+          const UMBRAL_ANALOGICO = 25; // Umbral mínimo para detectar movimiento del analógico
+          const SUAVIDAD_ZOOM = 0.12; // Interpolación más suave para zoom
+          const SUAVIDAD_NAVEGACION = 0.25; // Interpolación más suave para navegación
+
+          // Calcular dimensiones iniciales
+          let baseWidth = Math.floor(iw * scale);
+          let baseHeight = Math.floor(ih * scale);
+          let baseOffsetX = Math.floor((ScrCanvas.width - baseWidth) / 2);
+          let baseOffsetY = Math.floor((ScrCanvas.height - baseHeight) / 2);
+
+          // Función para limitar el offset dentro de los bordes de la imagen
+          function limitarOffset() {
+            // Usar zoom actual (no zoomObjetivo) para cálculos más precisos
+            const anchoActual = baseWidth * zoom;
+            const altoActual = baseHeight * zoom;
+            
+            // Solo limitar si la imagen es más grande que la pantalla
+            if (anchoActual > ScrCanvas.width) {
+              const maxOffsetX = (anchoActual - ScrCanvas.width) / 2;
+              if (offsetXObjetivo > maxOffsetX) offsetXObjetivo = maxOffsetX;
+              if (offsetXObjetivo < -maxOffsetX) offsetXObjetivo = -maxOffsetX;
+            } else {
+              // Si la imagen es más pequeña, centrarla
+              offsetXObjetivo = 0;
+            }
+            
+            if (altoActual > ScrCanvas.height) {
+              const maxOffsetY = (altoActual - ScrCanvas.height) / 2;
+              if (offsetYObjetivo > maxOffsetY) offsetYObjetivo = maxOffsetY;
+              if (offsetYObjetivo < -maxOffsetY) offsetYObjetivo = -maxOffsetY;
+            } else {
+              // Si la imagen es más pequeña, centrarla
+              offsetYObjetivo = 0;
+            }
+          }
+
+          function dibujarControles() {
+            if (!mostrarControles) return;
+            const fuente = FontObj.Font;
+            const tiempoMax = 240;
+            const alpha = Math.floor(220 * (1.0 - Math.min(1.0, tiempoControles / tiempoMax)));
+            if (alpha < 15) return;
+            const color = Color.new(255, 255, 255, alpha);
+            const colorAcento = Color.new(200, 255, 200, alpha);
+            const colorFondo = Color.new(0, 0, 0, Math.floor(alpha * 0.75));
+            const colorFondoBorde = Color.new(100, 150, 100, Math.floor(alpha * 0.3));
+            fuente.scale = FontObj.SizeS;
+            const SAFE_MARGIN = 24;
+            const iconSize = 16;
+            const rowH = 20;
+            const rows = 6;
+            const panelW = 320;
+            const panelH = rows * rowH + 10;
+            const panelX = SAFE_MARGIN;
+            const panelY = ScrCanvas.height - SAFE_MARGIN - panelH;
+            Draw.rect(panelX - 2, panelY - 2, panelW + 4, panelH + 4, colorFondoBorde);
+            Draw.rect(panelX, panelY, panelW, panelH, colorFondo);
+            const iconX = panelX + 8;
+            const textX = iconX + iconSize + 8;
+            let y = panelY + 5;
+            fuente.color = colorAcento;
+            PadIcons.drawScaled('R1', iconX, y, iconSize, iconSize, alpha);
+            fuente.print(textX, y, "Acercar");
+            y += rowH;
+            PadIcons.drawScaled('R2', iconX, y, iconSize, iconSize, alpha);
+            fuente.print(textX, y, "Alejar");
+            y += rowH;
+            fuente.color = color;
+            PadIcons.drawScaled('UP', iconX, y, iconSize, iconSize, alpha);
+            fuente.print(textX, y, "Mover");
+            y += rowH;
+            PadIcons.drawScaled('L3', iconX, y, iconSize, iconSize, alpha);
+            fuente.print(textX, y, "Mover");
+            y += rowH;
+            PadIcons.drawScaled('START', iconX, y, iconSize, iconSize, alpha);
+            fuente.print(textX, y, "Mostrar/Ocultar");
+            y += rowH;
+            PadIcons.drawScaled('CIRCLE', iconX, y, iconSize, iconSize, alpha);
+            fuente.print(textX, y, "Salir");
+            const zoomText = `Zoom: ${zoom.toFixed(2)}x`;
+            const zoomWidth = fuente.getTextSize(zoomText).width;
+            const zoomX = ScrCanvas.width - SAFE_MARGIN - zoomWidth - 6;
+            const zoomY = SAFE_MARGIN;
+            Draw.rect(zoomX - 5, zoomY - 2, zoomWidth + 10, 20, colorFondo);
+            fuente.color = colorAcento;
+            fuente.print(zoomX, zoomY, zoomText);
+          }
+
+          UICONST.LayersFg.push(() => {
+            // Actualizar zoom suave (interpolación mejorada)
+            const diferenciaZoom = zoomObjetivo - zoom;
+            if (Math.abs(diferenciaZoom) > 0.005) {
+              zoom += diferenciaZoom * SUAVIDAD_ZOOM; // Interpolación más suave
+            } else {
+              zoom = zoomObjetivo;
+            }
+
+            // Actualizar offset suave (interpolación mejorada)
+            const diferenciaX = offsetXObjetivo - offsetX;
+            const diferenciaY = offsetYObjetivo - offsetY;
+            if (Math.abs(diferenciaX) > 0.3) {
+              offsetX += diferenciaX * SUAVIDAD_NAVEGACION;
+            } else {
+              offsetX = offsetXObjetivo;
+            }
+            if (Math.abs(diferenciaY) > 0.3) {
+              offsetY += diferenciaY * SUAVIDAD_NAVEGACION;
+            } else {
+              offsetY = offsetYObjetivo;
+            }
+
+            // Calcular dimensiones y posición con zoom
+            const anchoActual = baseWidth * zoom;
+            const altoActual = baseHeight * zoom;
+            const posX = baseOffsetX + offsetX - (anchoActual - baseWidth) / 2;
+            const posY = baseOffsetY + offsetY - (altoActual - baseHeight) / 2;
+
+            // Dibujar imagen
+            Photo.width = Math.floor(anchoActual);
+            Photo.height = Math.floor(altoActual);
+            Photo.color = Color.setA(Photo.color, DashUI.Overlay.Alpha);
+            Photo.draw(Math.floor(posX), Math.floor(posY));
+
+            // Dibujar controles
+            dibujarControles();
+            tiempoControles++;
+          });
+
+			    let ViewerIval = os.setInterval(() => {
+            pad.update();
+
+            if (DashUI.ViewerExit || pad.justPressed(Pads.CIRCLE) || pad.justPressed(PadSettings.CancelButton)) {
+              DashUI.ViewerExit = false;
+              // Detener el intervalo inmediatamente
+              os.clearInterval(ViewerIval);
+              
+              // Iniciar animación de fade out
+              DashUI.AnimationQueue.push(() => {
+                DashUI.Overlay.Alpha -= 16;
+                if (DashUI.Overlay.Alpha <= 0) {
+                  // Remover función de dibujado del layer PRIMERO
+                  if (UICONST.LayersFg.length > 0) {
+                    UICONST.LayersFg.pop();
+                  }
+                  
+                  // Liberar recursos de la imagen
+                  if (Photo) {
+                    Photo.free();
+                    Photo = null;
+                  }
+                  
+                  // Restaurar el estado anterior (esto regresa al menú principal)
+                  // Esto es CRÍTICO: restaurar el estado antes de que termine la animación
+                  DashUI.State.Current = prevState;
+                  DashUI.State.Next = prevState;
+                  DashUI.State.Previous = prevState;
+                  
+                  // Resetear overlay completamente
+                  DashUI.Overlay.Alpha = 0;
+                  
+                  // Forzar actualización del modo de pads para que funcione el menú
+                  if (typeof SetDashPadEvents !== 'undefined') {
+                    SetDashPadEvents(prevState);
+                  }
+                  
+                  return true;
+                }
+                return false;
+              });
+              
+              // Salir del intervalo inmediatamente
+              return;
+            }
+
+            // Mostrar/ocultar controles con Start
+            if (pad.justPressed(Pads.START)) {
+              mostrarControles = !mostrarControles;
+              tiempoControles = 0;
+            }
+
+            // Zoom con R1 (acercar) - más suave
+            if (pad.pressed(Pads.R1)) {
+              zoomObjetivo += ZOOM_VELOCIDAD;
+              if (zoomObjetivo > ZOOM_MAX) zoomObjetivo = ZOOM_MAX;
+              limitarOffset();
+              tiempoControles = 0;
+            }
+
+            // Zoom con R2 (alejar) - más suave
+            if (pad.pressed(Pads.R2)) {
+              zoomObjetivo -= ZOOM_VELOCIDAD;
+              if (zoomObjetivo < ZOOM_MIN) zoomObjetivo = ZOOM_MIN;
+              limitarOffset();
+              tiempoControles = 0;
+            }
+
+            // Navegación con pad direccional (LEFT, RIGHT, UP, DOWN)
+            let movimientoPad = false;
+            
+            if (pad.pressed(Pads.LEFT) || (pad.lx < -64)) {
+              offsetXObjetivo -= NAVEGACION_VELOCIDAD_PAD;
+              movimientoPad = true;
+            }
+            if (pad.pressed(Pads.RIGHT) || (pad.lx > 64)) {
+              offsetXObjetivo += NAVEGACION_VELOCIDAD_PAD;
+              movimientoPad = true;
+            }
+            if (pad.pressed(Pads.UP) || (pad.ly < -64)) {
+              offsetYObjetivo -= NAVEGACION_VELOCIDAD_PAD; // Arriba es negativo
+              movimientoPad = true;
+            }
+            if (pad.pressed(Pads.DOWN) || (pad.ly > 64)) {
+              offsetYObjetivo += NAVEGACION_VELOCIDAD_PAD; // Abajo es positivo
+              movimientoPad = true;
+            }
+            
+            if (movimientoPad) {
+              limitarOffset();
+              tiempoControles = 0;
+            }
+
+            // Navegación con analógico izquierdo (más preciso)
+            const lx = pad.lx;
+            const ly = pad.ly;
+            
+            if (Math.abs(lx) > UMBRAL_ANALOGICO || Math.abs(ly) > UMBRAL_ANALOGICO) {
+              // Normalizar valores del analógico (-128 a 127) a velocidad de navegación
+              const velocidadX = (lx / 128.0) * NAVEGACION_VELOCIDAD_ANALOGICO;
+              const velocidadY = (ly / 128.0) * NAVEGACION_VELOCIDAD_ANALOGICO;
+              
+              offsetXObjetivo += velocidadX;
+              offsetYObjetivo -= velocidadY; // Invertir Y (arriba es negativo en analógico)
+              
+              limitarOffset();
+              tiempoControles = 0;
+            }
+          }, 0);
+		    }
+      ]]>
+    </Code>
+  </Script>
+  <Context Name="FileContext" Type="OptionContext" Filter="File">
+	  <Component Name="{SETASBG}" Icon="-1" />
+    <Confirm>
+      <![CDATA[
+        function(index, item)	{
+			    const path = DashUI.SubMenu.HighlightedItem.FullPath;
+			    SetNewCustomBgImg(path);
+
+		      let config = CfgMan.Get("main.cfg");
+			    config["customBg"] = path;
+		      config["displayBg"] = UserConfig.DisplayBg.toString();
+		      CfgMan.Push("main.cfg", config);
+		    }
+      ]]>
+    </Confirm>
+  </Context>
+  <Context Name="AlbumContext" Type="OptionContext" Filter="SubDeviceOnly">
+    <Component Name="{INFO}" Icon="-1">
+      <Confirm Event="OPEN_DIALOG" Dialog="item.Dialog"/>
+      <Dialog Type="INFO" BG="false" BackBtn="true" ElementIcon="true">
+        <Info>
+          <Item Name="Album" Value="{DashUI.SubMenu.HighlightedItem.Name}" Selectable="false" />
+          <Item Name="{PHOTOS}" Value="{DashUI.SubMenu.HighlightedItem.FileCount}" Selectable="false" />
+          <Item Name="{SIZE}" Value="0 bytes" Selectable="false" />
+        </Info>
+      </Dialog>
+    </Component>
+  </Context>
+</App>

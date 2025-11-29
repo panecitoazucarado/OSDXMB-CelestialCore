@@ -1,0 +1,24 @@
+{
+  "Name": "POPSLoader",
+  "Description": "v1.0.0 rev5",
+  "Icon": "TOOL",
+  "Category": 6,
+  "Type": "ELF",
+  "Value": {
+    "Path": [
+      "{cwd}/APPS/POPSLDR/POPSLOADER.ELF",
+      "{cwd}/POPSLDR/POPSLOADER.ELF",
+      "{cwd}/POPSLOADER.ELF",
+      "mass?:/APPS/POPSLDR/POPSLOADER.ELF",
+      "mass?:/OSDXMB/APPS/POPSLDR/POPSLOADER.ELF",
+      "mass?:/POPSLDR/POPSLOADER.ELF",
+      "mass?:/OSDXMB/POPSLDR/POPSLOADER.ELF",
+      "mass?:/POPSLOADER.ELF",
+      "mass?:/OSDXMB/POPSLOADER.ELF",
+      "mc?:/APPS/POPSLDR/POPSLOADER.ELF",
+      "mc?:/POPSLDR/POPSLOADER.ELF"
+    ],
+    "Args": []
+  },
+  "CustomIcon": "{cwd}/APPS/POPSLDR/ico.png"
+}

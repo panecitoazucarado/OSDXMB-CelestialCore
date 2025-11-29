@@ -1,0 +1,23 @@
+{
+  "_comment": "plugin by nuno6573",
+  "Name": [
+    "Exit to Browser",
+    "Quitter vers le Navigateur",
+    "Salir al Navegador",
+    "Zum Browser zurückkehren",
+    "Esci al Browser",
+    "Verlaten naar de Browser",
+    "Sair para o Navegador"
+  ],
+  "Description": "OSD-Menu v1.0.0-rc2",
+  "Icon": "OSD",
+  "Category": 0,
+  "Type": "ELF",
+  "Value": {
+    "Path": [
+      "{cwd}/APPS/SYS_OSDMENU/osdmenu.elf",
+      "mc?:/SYS_OSDMENU/osdmenu.elf",
+      "mass?:/APPS/SYS_OSDMENU/osdmenu.elf"
+    ]
+  }
+}

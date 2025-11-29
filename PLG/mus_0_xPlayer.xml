@@ -1,0 +1,137 @@
+<App Type="SUBMENU" Category="3" Icon="FOLDER">
+  <Name>
+    <String str="Music Player" />
+    <String str="Lecteur de musique" />
+    <String str="Reproductor de Música" />
+    <String str="Musikspieler" />
+    <String str="Lettore musicale" />
+    <String str="Muziekspeler" />
+    <String str="Reprodutor de Música" />
+  </Name>
+  <Options Type="Explorer" ExtensionFilter="mp3, wav, ogg" />
+  <Script Name="AudioPlayer" Type="OptionValue" Condition="extensionMatches(DashUI.SelectedItem.Name, [ 'mp3', 'wav', 'ogg' ])">
+    <Code>
+      <![CDATA[
+        function() {
+          let prevState = DashUI.State.Current;
+          DashUI.State.Current = 9;
+          DashUI.State.Next = 9;
+          DashUI.State.Previous = 9;
+          DashUI.AnimationQueue.push(() => { DashUI.Overlay.Alpha += 16; if (DashUI.Overlay.Alpha >= 128) { return true; } return false; });
+
+          function writeBytes(path, bytes) { const fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC); if (fd < 0) { return false; } os.write(fd, bytes.buffer, bytes.byteOffset, bytes.byteLength); os.close(fd); return true; }
+
+          function sanitizeMP3(path) {
+            const data = readAllBytes(path);
+            if (data.length < 16) { return path; }
+            let start = 0;
+            if (data[0] === 0x49 && data[1] === 0x44 && data[2] === 0x33) {
+              const sz = ((data[6]&127)<<21)|((data[7]&127)<<14)|((data[8]&127)<<7)|(data[9]&127);
+              start = 10 + sz;
+            }
+            let end = data.length;
+            for (let i = Math.max(0, end - 256); i < end - 7; i++) {
+              if (data[i] === 0x41 && data[i+1] === 0x50 && data[i+2] === 0x45 && data[i+3] === 0x54 && data[i+4] === 0x41 && data[i+5] === 0x47 && data[i+6] === 0x45 && data[i+7] === 0x58) { end = i; break; }
+            }
+            if (start >= end) { return path; }
+            const slice = data.slice(start, end);
+            const root = getRootName(path);
+            const tmpDir = `${root}:/__osdxmb_tmp/`;
+            if (!std.exists(tmpDir)) { os.mkdir(tmpDir); }
+            const out = `${tmpDir}${getFileName(path)}.clean.mp3`;
+            if (writeBytes(out, slice)) { return out; }
+            return path;
+          }
+
+          function getWavDuration(path) {
+            const data = readAllBytes(path);
+            if (data.length < 44) return 0;
+            const sampleRate = data[24] | (data[25]<<8) | (data[26]<<16) | (data[27]<<24);
+            const byteRate = data[28] | (data[29]<<8) | (data[30]<<16) | (data[31]<<24);
+            const subchunk2Size = data[40] | (data[41]<<8) | (data[42]<<16) | (data[43]<<24);
+            return subchunk2Size / byteRate;
+          }
+
+          function getAudioMetadata(path) {
+            const ext = getFileExtension(path).toLowerCase();
+            const fileSize = DashUI.SelectedItem.Description || '0 bytes';
+            let duration = 0;
+            let bitrate = '-';
+            let channels = '-';
+
+            if (ext === 'wav') {
+              duration = getWavDuration(path);
+              const data = readAllBytes(path);
+              channels = data[22];
+              bitrate = ((data[34] | (data[35]<<8)) * data[24] | (data[25]<<8)) || '-';
+            } else if (ext === 'mp3' || ext === 'ogg') {
+              const info = AudioUtils.getAudioInfo ? AudioUtils.getAudioInfo(path) : null;
+              if (info) {
+                duration = info.duration || 0;
+                bitrate = info.bitrate || '-';
+                channels = info.channels || '-';
+              }
+            }
+
+            return {
+              name: DashUI.SelectedItem.Name,
+              device: DashUI.SelectedItem.Device,
+              size: fileSize,
+              duration: duration.toFixed(2) + 's',
+              bitrate: bitrate,
+              channels: channels
+            };
+          }
+
+          const ext = getFileExtension(DashUI.SelectedItem.Name).toLowerCase();
+          const root = getRootName(DashUI.SelectedItem.FullPath);
+          if (root.substring(0,4) === "mmce") {
+            DashUI.AnimationQueue.push(() => { DashUI.Overlay.Alpha -= 16; if (DashUI.Overlay.Alpha <= 0) { DashUI.State.Current = prevState; DashUI.State.Next = prevState; DashUI.State.Previous = prevState; return true; } return false; });
+            return;
+          }
+
+          const prep = AudioUtils.prepareForPlayback(DashUI.SelectedItem.FullPath);
+          let playPath = prep.path;
+          if (prep.unsupported) {
+            DashUI.AnimationQueue.push(() => { DashUI.Overlay.Alpha -= 16; if (DashUI.Overlay.Alpha <= 0) { DashUI.State.Current = prevState; DashUI.State.Next = prevState; DashUI.State.Previous = prevState; return true; } return false; });
+            AudioUtils.cleanupTemp(playPath, DashUI.SelectedItem.FullPath);
+            return;
+          }
+
+          try { if (CurrentBGM) { CurrentBGM.pause(); CurrentBGM.free(); CurrentBGM = false; } } catch (e) {}
+          try { if (typeof BackgroundBGMInfo !== 'undefined' && BackgroundBGMInfo.tempPath) { AudioUtils.cleanupTemp(BackgroundBGMInfo.tempPath, BackgroundBGMInfo.originalPath || DashUI.SelectedItem.FullPath); BackgroundBGMInfo.tempPath = null; BackgroundBGMInfo.originalPath = null; } } catch (e) {}
+
+          // Mostrar metadatos
+          const metadata = getAudioMetadata(DashUI.SelectedItem.FullPath);
+          DashUI.Dialog.show({
+            type: 'INFO',
+            title: 'Audio Metadata',
+            items: [
+              { name: 'Name', value: metadata.name },
+              { name: 'Device', value: metadata.device },
+              { name: 'Size', value: metadata.size },
+              { name: 'Duration', value: metadata.duration },
+              { name: 'Bitrate', value: metadata.bitrate },
+              { name: 'Channels', value: metadata.channels }
+            ]
+          });
+
+          MusicPlayerUI.open(playPath, DashUI.SelectedItem.FullPath, prep.pitch);
+
+        }
+      ]]>
+    </Code>
+  </Script>
+  <Context Name="FileContext" Type="OptionContext" Filter="File">
+    <Component Name="{INFO}" Icon="-1">
+      <Confirm Event="OPEN_DIALOG" Dialog="item.Dialog"/>
+      <Dialog Type="INFO" BG="false" BackBtn="true" ElementIcon="true">
+        <Info>
+          <Item Name="{TITLE}" Value="{DashUI.SubMenu.HighlightedItem.Name}" Selectable="false" />
+          <Item Name="{DEVICE}" Value="{DashUI.SubMenu.HighlightedItem.Device}" Selectable="false" />
+          <Item Name="{SIZE}" Value="{DashUI.SubMenu.HighlightedItem.Description || '0 bytes'}" Selectable="false" />
+        </Info>
+      </Dialog>
+    </Component>
+  </Context>
+</App>

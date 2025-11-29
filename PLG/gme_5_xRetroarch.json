@@ -1,0 +1,13 @@
+{
+  "Name": "Retroarch",
+  "Description": "v1.21",
+  "Icon": "TOOL",
+  "Category": 6,
+  "Type": "ELF",
+  "Value": {
+    "Path": "{cwd}/APPS/RETROARCH/PS2BBL_forwarder.ELF",
+    "Args": []
+  },
+  "CustomIcon": "{cwd}/APPS/RETROARCH/ico.png",
+  "PIC2": "{cwd}/APPS/RETROARCH/PIC2.png"
+}

@@ -1,0 +1,17 @@
+{
+  "_comment": "plugin by nuno6573",
+  "Name": "Simple Midia System",
+  "Description": "v2.9 rev4",
+  "Icon": "TOOL",
+  "CustomIcon": "{cwd}/APPS/APP_SMS/ic_app_sms.png",
+  "Category": 4,
+  "Type": "ELF",
+  "Value": {
+    "Path": [
+      "{cwd}/APPS/APP_SMS/SMS.ELF",
+      "mc?:/APP_SMS/SMS.ELF",
+      "mass?:/APPS/APP_SMS/SMS.ELF"
+    ],
+    "Args": []
+  }
+}

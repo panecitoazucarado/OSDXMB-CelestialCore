@@ -1,0 +1,16 @@
+{
+  "Name": "Open PS2 Loader-MMCE",
+  "Description": "v1.2.0b MMCE Support rev3",
+  "Icon": "TOOL",
+  "Category": 6,
+  "Type": "ELF",
+  "Value": {
+    "Path": [
+      "{cwd}/APPS/APP_OPL-MMCE/OPL.ELF",
+      "mc?:/APP_OPL-MMCE/OPL.ELF",
+      "mass?:/APPS/APP_OPL-MMCE/OPL.ELF"
+    ],
+    "Args": []
+  },
+  "CustomIcon": "{cwd}/APPS/APP_OPL-MMCE/ico.png"
+}

@@ -1,0 +1,56 @@
+{
+  "_comment": "plugin by nuno6573",
+  "Name": "DKWDRV",
+  "Description": [
+    "Unified Single PS1DRV Replacement",
+    "Remplacement unifié du PS1DRV unique",
+    "Reemplazo unificado de PS1DRV",
+    "Einheitlicher Ersatz für einzelne PS1DRV",
+    "Sostituzione unificata del singolo PS1DRV",
+    "Unified Single PS1DRV-vervanging",
+    "Substituição unificada de PS1DRV único"
+  ],
+  "Icon": "FOLDER",
+  "CustomIcon": "{cwd}/APPS/PS1_DKWDRV/ic_app_DKWDRV.png",
+  "Category": 6,
+  "Type": "SUBMENU",
+  "Value": {
+    "Default": 0,
+    "Items": [
+     {
+        "Name": "DKWDRV",
+        "Description": "v1.7.3 Old audio XA PoC",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/PS1_DKWDRV/ic_app_DKWDRV.png",
+        "Category": 5,
+        "Type": "ELF",
+        "Value": {
+          "Path": [
+           "{cwd}/APPS/PS1_DKWDRV/DKWDRV_XA_POC.ELF",
+           "mc?:/PS1_DKWDRV/DKWDRV_XA_POC.ELF",
+           "mass?:/APPS/PS1_DKWDRV/DKWDRV_XA_POC.ELF",
+           "mass?:/DKWDRV/DKWDRV_XA_POC.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "DKWDRV",
+        "Description": "v1.7.6f",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/PS1_DKWDRV/ic_app_DKWDRV.png",
+        "Category": 5,
+        "Type": "ELF",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/PS1_DKWDRV/DKWDRV.ELF",
+            "mc?:/PS1_DKWDRV/DKWDRV.ELF",
+            "mass?:/APPS/PS1_DKWDRV/DKWDRV.ELF",
+            "mass?:/DKWDRV/DKWDRV.ELF"
+          ],
+          "Args": []
+        }
+      }
+    ]
+  }
+}

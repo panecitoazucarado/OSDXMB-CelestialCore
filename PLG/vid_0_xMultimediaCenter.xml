@@ -1,0 +1,200 @@
+<App Type="SUBMENU" Category="4" Icon="FOLDER">
+  <Name>
+    <String str="Multimedia Center" />
+    <String str="Centre Multimédia" />
+    <String str="Centro Multimedia" />
+    <String str="Multimedia-Zentrum" />
+    <String str="Centro Multimediale" />
+    <String str="Multimedia Centrum" />
+    <String str="Centro Multimédia" />
+  </Name>
+  <Options Type="Explorer" ExtensionFilter="mp4, avi, bik, mkv, mpg, mpeg, mov, wmv, flv, 3gp, asf, divx, xvid" />
+  <Script Name="VideoPlayer" Type="OptionValue" Condition="extensionMatches(DashUI.SelectedItem.Name, [ 'mp4', 'avi', 'bik', 'mkv', 'mpg', 'mpeg', 'mov', 'wmv', 'flv', '3gp', 'asf', 'divx', 'xvid' ])">
+    <Code>
+      <![CDATA[
+        function() {
+          let prevState = DashUI.State.Current;
+          const videoPath = DashUI.SelectedItem.FullPath;
+          const ext = getFileExtension(videoPath).toLowerCase();
+          const root = getRootName(videoPath);
+          
+          // Check if device is supported
+          if (root.substring(0, 4) === "mmce") {
+            DashUI.Dialog.show({
+              type: 'ERROR',
+              title: 'Unsupported Device',
+              items: [
+                { name: 'Message', value: 'Video playback from MMCE is not supported.' }
+              ]
+            });
+            return;
+          }
+
+          // Show video info
+          const fileSize = DashUI.SelectedItem.Description || '0 bytes';
+          DashUI.Dialog.show({
+            type: 'INFO',
+            title: 'Video Information',
+            items: [
+              { name: 'Name', value: DashUI.SelectedItem.Name },
+              { name: 'Device', value: DashUI.SelectedItem.Device },
+              { name: 'Size', value: fileSize },
+              { name: 'Format', value: ext.toUpperCase() },
+              { name: 'Path', value: videoPath }
+            ]
+          });
+
+          // Try to play video using native PS2/Athena capabilities
+          try {
+            // Stop any current background music
+            try {
+              if (CurrentBGM) {
+                CurrentBGM.pause();
+                CurrentBGM.free();
+                CurrentBGM = false;
+              }
+            } catch (e) {}
+
+            // Attempt to play video using Sound.Stream (works for some video formats with audio)
+            // For PS2, MPEG-1/MPEG-2 are natively supported
+            let canPlay = false;
+            
+            // Check if format is natively supported
+            const nativeFormats = ['mpg', 'mpeg', 'mp4'];
+            if (nativeFormats.includes(ext)) {
+              try {
+                // Try using Sound.Stream for MPEG formats (PS2 native)
+                const videoStream = Sound.Stream(videoPath);
+                if (videoStream) {
+                  videoStream.play();
+                  canPlay = true;
+                  
+                  // Show playback controls
+                  DashUI.State.Current = 9;
+                  DashUI.State.Next = 9;
+                  DashUI.State.Previous = 9;
+                  DashUI.AnimationQueue.push(() => {
+                    DashUI.Overlay.Alpha += 16;
+                    if (DashUI.Overlay.Alpha >= 128) {
+                      return true;
+                    }
+                    return false;
+                  });
+
+                  // Setup playback control interval
+                  let frameCounter = 0;
+                  const tick = os.setInterval(() => {
+                    try {
+                      frameCounter++;
+                      if (frameCounter % 2 !== 0) { return; }
+                      
+                      if (!videoStream || !videoStream.playing()) {
+                        DashUI.AnimationQueue.push(() => {
+                          DashUI.Overlay.Alpha -= 16;
+                          if (DashUI.Overlay.Alpha <= 0) {
+                            try {
+                              if (videoStream) {
+                                videoStream.pause();
+                                videoStream.free();
+                              }
+                            } catch (e) {}
+                            DashUI.State.Current = prevState;
+                            DashUI.State.Next = prevState;
+                            DashUI.State.Previous = prevState;
+                            os.clearInterval(tick);
+                            return true;
+                          }
+                          return false;
+                        });
+                      }
+                      
+                      if (pad.justPressed(PadSettings.CancelButton)) {
+                        DashUI.AnimationQueue.push(() => {
+                          DashUI.Overlay.Alpha -= 16;
+                          if (DashUI.Overlay.Alpha <= 0) {
+                            try {
+                              if (videoStream) {
+                                videoStream.pause();
+                                videoStream.free();
+                              }
+                            } catch (e) {}
+                            DashUI.State.Current = prevState;
+                            DashUI.State.Next = prevState;
+                            DashUI.State.Previous = prevState;
+                            os.clearInterval(tick);
+                            return true;
+                          }
+                          return false;
+                        });
+                      }
+                      
+                      if (pad.justPressed(Pads.SQUARE)) {
+                        if (videoStream.playing()) {
+                          videoStream.pause();
+                        } else {
+                          videoStream.play();
+                        }
+                      }
+                    } catch (e) {
+                      xlog(`Error in video playback tick: ${e}`);
+                      try {
+                        if (videoStream) {
+                          videoStream.pause();
+                          videoStream.free();
+                        }
+                      } catch (e2) {}
+                      DashUI.State.Current = prevState;
+                      DashUI.State.Next = prevState;
+                      DashUI.State.Previous = prevState;
+                      os.clearInterval(tick);
+                    }
+                  }, 16);
+                  
+                  return;
+                }
+              } catch (e) {
+                xlog(`Error playing video with Sound.Stream: ${e}`);
+              }
+            }
+
+            // If native playback failed, show message
+            if (!canPlay) {
+              DashUI.Dialog.show({
+                type: 'INFO',
+                title: 'Video Format',
+                items: [
+                  { name: 'Message', value: `Video format .${ext} may require external player.` },
+                  { name: 'Note', value: 'PS2 natively supports MPEG-1/MPEG-2 formats.' },
+                  { name: 'Suggestion', value: 'Convert video to MPEG format for best compatibility.' }
+                ]
+              });
+            }
+          } catch (e) {
+            xlog(`Error in video player: ${e}`);
+            DashUI.Dialog.show({
+              type: 'ERROR',
+              title: 'Playback Error',
+              items: [
+                { name: 'Error', value: `Could not play video: ${e}` }
+              ]
+            });
+          }
+        }
+      ]]>
+    </Code>
+  </Script>
+  <Context Name="FileContext" Type="OptionContext" Filter="File">
+    <Component Name="{INFO}" Icon="-1">
+      <Confirm Event="OPEN_DIALOG" Dialog="item.Dialog"/>
+      <Dialog Type="INFO" BG="false" BackBtn="true" ElementIcon="true">
+        <Info>
+          <Item Name="{TITLE}" Value="{DashUI.SubMenu.HighlightedItem.Name}" Selectable="false" />
+          <Item Name="{DEVICE}" Value="{DashUI.SubMenu.HighlightedItem.Device}" Selectable="false" />
+          <Item Name="{SIZE}" Value="{DashUI.SubMenu.HighlightedItem.Description || '0 bytes'}" Selectable="false" />
+          <Item Name="{FORMAT}" Value="{getFileExtension(DashUI.SubMenu.HighlightedItem.Name).toUpperCase()}" Selectable="false" />
+        </Info>
+      </Dialog>
+    </Component>
+  </Context>
+</App>
+

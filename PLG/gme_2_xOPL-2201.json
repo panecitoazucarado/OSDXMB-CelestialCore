@@ -1,0 +1,16 @@
+{
+  "Name": "Open PS2 Loader",
+  "Description": "v1.2.0b 2201",
+  "Icon": "TOOL",
+  "Category": 6,
+  "Type": "ELF",
+  "Value": {
+    "Path": [
+      "{cwd}/APPS/APP_OPL-2201/OPNPS2LD.ELF",
+      "mc?:/APP_OPL-2201/OPNPS2LD.ELF",
+      "mass?:/APPS/APP_OPL-2201/OPNPS2LD.ELF"
+    ],
+    "Args": []
+  },
+  "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ico.png"
+}

@@ -1,0 +1,150 @@
+{
+  "_comment": "plugin by nuno6573",
+  "Name": [
+    "nHddLauncher Collection",
+    "Collection nHddLauncher",
+    "Colección nHddLauncher",
+    "nHddLauncher-Sammlung",
+    "Collezione nHddLauncher",
+    "nHddLauncher-Collectie",
+    "Coleção nHddLauncher"
+  ],
+  "Description": [
+    "PS2 neutrino Launcher",
+    "Lanceur neutrino PS2",
+    "Lanzador neutrino PS2",
+    "PS2 neutrino Launcher",
+    "Lanciatore neutrino PS2",
+    "PS2 neutrino-Lanceerder",
+    "Lançador neutrino PS2"
+  ],
+  "Icon": "FOLDER",
+  "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl.png",
+  "Category": 6,
+  "Type": "SUBMENU",
+  "Value": {
+    "Default": 0,
+    "Items": [
+      {
+        "Name": "Multiple Devices (nhddl.yaml)",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "ATA (BDM HDD)",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=ata"]
+        }
+      },
+      {
+        "Name": "HDL (APA HDD)",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=hdl"]
+        }
+      },
+      {
+        "Name": "i.Link",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=ilink"]
+        }
+      },
+      {
+        "Name": "MMCE",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=mmce"]
+        }
+      },
+      {
+        "Name": "MX4SIO",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=mx4sio"]
+        }
+      },
+      {
+        "Name": "UDPBD",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=udpbd", "-udpbd_ip=192.168.1.6"]
+        }
+      },
+      {
+        "Name": "USB",
+        "Description": "mmce-hdl-4-30",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_NHDDL/ic_app_nhddl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_NHDDL/nhddl.ELF",
+            "mc?:/APP_NHDDL/nhddl.ELF",
+            "mass?:/APPS/APP_NHDDL/nhddl.ELF"
+          ],
+          "Args": ["-mode=usb"]
+        }
+      }
+    ]
+  }
+}

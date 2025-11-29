@@ -1,0 +1,142 @@
+{
+  "_comment": "plugin by nuno6573",
+  "Name": [
+    "Open PS2 Loader Collection",
+    "Collection Open PS2 Loader",
+    "Colección Open PS2 Loader",
+    "Open PS2 Loader-Sammlung",
+    "Collezione Open PS2 Loader",
+    "Open PS2 Loader-Collectie",
+    "Open PS2 Loader Collection"
+  ],
+  "Description": [
+    "Open source Game and Application Loader",
+    "Chargeur de Jeux et d'Applications open source",
+    "Cargador de juegos y Aplicaciones de código abierto",
+    "Open-Source-Spiel- und Anwendungs-Loader",
+    "Caricatore di giochi e applicazioni open source",
+    "Open source Game- en Applicatielader",
+    "Carregador de Jogos e Aplicações de código aberto"
+  ],
+  "Icon": "FOLDER",
+  "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl.png",
+  "Category": 6,
+  "Type": "SUBMENU",
+  "Value": {
+    "Default": 0,
+    "Items": [
+      {
+        "Name": "v1.0.0",
+        "Description": "",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/OPL-100/OPL-100.ELF",
+            "mc?:/OPL-100/OPL-100.ELF",
+            "mass?:/APPS/OPL-100/OPL-100.ELF",
+            "hdd:__common/APPS/OPL-100/OPL-100.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "v1.1.0",
+        "Description": "",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/OPL/OPNPS2LD.ELF",
+            "mc?:/OPL-110/OPL-110.ELF",
+            "mass?:/APPS/OPL-110/OPL-110.ELF",
+            "hdd:__common/APPS/OPL-110/OPL-110.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "v1.2.0b-DB 2202",
+        "Description": "Not Recommended",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/OPL_DB/OPL-DB.ELF",
+            "mc?:/OPL_DB/OPL-DB.ELF",
+            "mass?:/APPS/OPL_DB/OPL-DB.ELF",
+            "hdd:__common/APPS/OPL_DB/OPL-DB.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "v1.2.0b 1959",
+        "Description": "",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/OPL/OPNPS2LD.ELF",
+            "mc?:/APP_OPL-1959/OPNPS2LD.ELF",
+            "mass?:/APPS/APP_OPL-1959/OPNPS2LD.ELF",
+            "hdd:__common/APPS/APP_OPL-1959/OPNPS2LD.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "v1.2.0b 2049 Game ID",
+        "Description": "",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_OPL-2029/OPL-2049GID.ELF",
+            "mc?:/APP_OPL-2029/OPL-2049GID.ELF",
+            "mass?:/APPS/APP_OPL-2029/OPL-2049GID.ELF",
+            "hdd:__common/APPS/APP_OPL-2029/OPL-2049GID.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "v1.2.0b 2201",
+        "Description": "",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-2201/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_OPL-2201/OPNPS2LD.ELF",
+            "mc?:/APP_OPL-2201/OPNPS2LD.ELF",
+            "mass?:/APPS/APP_OPL-2201/OPNPS2LD.ELF",
+            "hdd:__common/APPS/APP_OPL-2201/OPNPS2LD.ELF"
+          ],
+          "Args": []
+        }
+      },
+      {
+        "Name": "v1.2.0b 2217 MMCE Support rev3",
+        "Description": "",
+        "Type": "ELF",
+        "Icon": "TOOL",
+        "CustomIcon": "{cwd}/APPS/APP_OPL-MMCE/ic_app_opl_alt.png",
+        "Value": {
+          "Path": [
+            "{cwd}/APPS/APP_OPL-MMCE/OPL.ELF",
+            "mc?:/APP_OPL-MMCE/OPL.ELF",
+            "mass?:/APPS/APP_OPL-MMCE/OPL.ELF",
+            "hdd:__common/APPS/APP_OPL-MMCE/OPL.ELF"
+          ],
+          "Args": []
+        }
+      }
+    ]
+  }
+}
