@@ -95,10 +95,8 @@ function playBgm(sound) {
 
 const PlayBootSfx   = () => {
     const soundPath = GetBootSoundPath();
-    if (soundPath) {
-        playBgm(soundPath);
-    }
-    // Si soundPath es null, no reproduce nada (como el usuario quiere)
+    if (!soundPath) { return; }
+    Tasks.Push(() => playBgm(soundPath));
 };
 const PlayCursorSfx = () => playSfx(false);
 const PlayCancelSfx = () => playSfx(false);

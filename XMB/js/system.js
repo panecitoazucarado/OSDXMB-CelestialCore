@@ -144,6 +144,7 @@ function getDevicesAsItems(params = {}) {
 	const Items = [];
 	const fileFilters = ('fileFilters' in params) ? params.fileFilters : false;
 	const fileoptions = ('fileoptions' in params) ? params.fileoptions : false;
+    refreshAvailableDevices();
 
     for (let i = 0; i < gDevices.length; i++) {
         Items.push({ ...gDevices[i] });
@@ -162,7 +163,8 @@ function exploreDir(params) {
 	const isHdd = (params.dir.substring(0,3) === "hdd");
 	const isMc = (params.dir.substring(0,2) === "mc");
     let dirItems = [];
-    try { dirItems = System.listDir(params.dir); } catch (e) { return { Items: [], Default: 0 }; }
+    try { dirItems = listDirCached(params.dir); }
+    catch (e) { return { Items: [], Default: 0 }; }
 
     // Separate directories and files
     let directories = dirItems.filter(item => item.name !== "." && item.name !== ".." && item.dir); // All directories
@@ -195,10 +197,11 @@ function exploreDir(params) {
             get() {
                 delete this.FileCount;
                 let list = [];
-                try { list = os.readdir(this.FullPath)[0] || []; } catch (e) { list = []; }
+                try { list = listDirCached(this.FullPath); } catch (e) { list = []; }
+                const names = list.map(entry => entry.name);
                 const count = (!fileFilters)
-                    ? list.length
-                    : list.reduce((acc, name) => acc + (extensionMatches(name, fileFilters) ? 1 : 0), 0);
+                    ? names.length
+                    : names.reduce((acc, name) => acc + (extensionMatches(name, fileFilters) ? 1 : 0), 0);
                 this.FileCount = count;
                 return count;
             },
@@ -251,9 +254,9 @@ function getFileAsItem(params) {
         case "exe": item.Icon = "EXE_FILE"; break;
         case "icn": item.Icon = "ICN_FILE"; break;
         case "ico": item.Icon = "ICO_FILE"; break;
-        case "png": item.Icon = "PNG_IMAGE"; break;
-        case "jpg": item.Icon = "JPG_IMAGE"; break;
-        case "bmp": item.Icon = "BMP_IMAGE"; break;
+        case "png": item.Icon = "PNG_IMAGE_FILE"; break;
+        case "jpg": item.Icon = "JPG_IMAGE_FILE"; break;
+        case "bmp": item.Icon = "BMP_IMAGE_FILE"; break;
         case "gif": item.Icon = "GIF_FILE"; break;
         case "mp3": item.Icon = "MP3_FILE"; break;
         case "wav": item.Icon = "WAV_FILE"; break;
@@ -273,6 +276,7 @@ function getFileAsItem(params) {
         case "xvid": item.Icon = "CAT_VIDEO"; break;
         case "rblx": item.Icon = "RBLX_FILE"; break;
         case "rar": item.Icon = "RAR_FILE"; break;
+        case "zip": item.Icon = "ZIP_FILE"; break;
     }
 
     if (('fileoptions' in params) && params.fileoptions) { item.Option = params.fileoptions; }
@@ -316,11 +320,91 @@ function deleteItem(collection, id) {
     }
     else { os.remove(path); }
     collection.splice(id, 1);
+    invalidateDirCache();
+    refreshAvailableDevices(true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 ///*				   			   Paths							  *///
 //////////////////////////////////////////////////////////////////////////
+
+const DEVICE_ALIAS_MAP = {
+    mass: (() => {
+        const variants = ["mass"];
+        for (let i = 0; i < 10; i++) { variants.push(`mass${i}`); }
+        return variants;
+    })(),
+    mc: ["mc", "mc0", "mc1"],
+    mmce: ["mmce", "mmce0", "mmce1"]
+};
+const DEVICE_NEEDS_SLASH = /^(mass\d*|mc\d?|mmce\d?|pfs\d*|hdd\d*|host|cdfs|cdrom)$/i;
+
+function pathExists(path) {
+    if (!path || typeof path !== "string") { return false; }
+    try { return std.exists(path); }
+    catch (e) { return false; }
+}
+const DIR_CACHE_LIMIT = 32;
+const DIR_CACHE_TTL_MS = 10000;
+const DirCacheStore = new Map();
+const DirCacheOrder = [];
+function touchDirCacheKey(key) {
+    const idx = DirCacheOrder.indexOf(key);
+    if (idx > -1) { DirCacheOrder.splice(idx, 1); }
+    DirCacheOrder.push(key);
+    while (DirCacheOrder.length > DIR_CACHE_LIMIT) {
+        const oldest = DirCacheOrder.shift();
+        DirCacheStore.delete(oldest);
+    }
+}
+function listDirCached(path) {
+    if (typeof path !== "string" || path.length === 0) { return []; }
+    const now = Date.now();
+    const cached = DirCacheStore.get(path);
+    if (cached && (now - cached.time) < DIR_CACHE_TTL_MS) { return cached.items; }
+    let dirItems = [];
+    try { dirItems = System.listDir(path); }
+    catch (e) { dirItems = []; }
+    DirCacheStore.set(path, { time: now, items: dirItems });
+    touchDirCacheKey(path);
+    return dirItems;
+}
+function invalidateDirCache(path = null) {
+    if (!path) {
+        DirCacheStore.clear();
+        DirCacheOrder.length = 0;
+        return;
+    }
+    DirCacheStore.delete(path);
+    const idx = DirCacheOrder.indexOf(path);
+    if (idx > -1) { DirCacheOrder.splice(idx, 1); }
+}
+function normalizeDevicePath(path) {
+    if (typeof path !== "string") { return ""; }
+    let normalized = path.replace(/\\/g, "/");
+    normalized = normalized.replace(/\/{2,}/g, "/");
+    const colonIndex = normalized.indexOf(":");
+    if (colonIndex === -1) { return normalized; }
+    const root = normalized.slice(0, colonIndex);
+    let rest = normalized.slice(colonIndex + 1);
+    if (rest.length === 0) { return `${root}:/`; }
+    if (DEVICE_NEEDS_SLASH.test(root) && rest[0] !== "/") { rest = `/${rest}`; }
+    return `${root}:${rest}`;
+}
+function resolveAliasPath(path) {
+    const colonIndex = path.indexOf(":");
+    if (colonIndex === -1) { return path; }
+    if (pathExists(path)) { return path; }
+    const root = path.slice(0, colonIndex).toLowerCase();
+    const rest = path.slice(colonIndex + 1);
+    const variants = DEVICE_ALIAS_MAP[root];
+    if (!variants) { return path; }
+    for (let i = 0; i < variants.length; i++) {
+        const candidate = `${variants[i]}:${rest}`;
+        if (pathExists(candidate)) { return candidate; }
+    }
+    return path;
+}
 
 /* Get the root of a path */
 function getRootName(path) {
@@ -1076,28 +1160,28 @@ function StartBmpViewer(path, prevState) {
 }
 
 function resolveFilePath(filePath) {
+    if (typeof filePath !== "string" || filePath.length === 0) { return ""; }
     filePath = filePath.replace("{cwd}", CWD);
     filePath = filePath.replace("{bootpath}", System.boot_path);
-    filePath = filePath.replace("//", "/");
+    filePath = normalizeDevicePath(filePath);
 
     // Replace all {...} expressions with resolved values
     filePath = filePath.replace(/\{([^{}]+)\}/g, (_, expr) => eval(expr.trim()));
-    if (!filePath.includes('?')) return filePath; // Literal path, return as is
+    if (!filePath.includes('?')) { return resolveAliasPath(filePath); } // Literal path, resolve aliases if required
 
     const prefixes = {
-        'mass': Array.from({ length: 10 }, (_, i) => `mass${i}`),
-        'mc': ['mc0', 'mc1'],
-        'mmce': ['mmce0', 'mmce1']
+        'mass': DEVICE_ALIAS_MAP.mass,
+        'mc': DEVICE_ALIAS_MAP.mc,
+        'mmce': DEVICE_ALIAS_MAP.mmce
     };
 
     const match = filePath.match(/^(mass|mc|mmce)\?:\/(.*)/);
     if (!match) return '';
 
     const [, root, subPath] = match;
-    for (const variant of prefixes[root])
-    {
-        const fullPath = `${variant}:/${subPath}`;
-        if (std.exists(fullPath))  { return fullPath; }
+    for (const variant of prefixes[root]) {
+        const fullPath = normalizeDevicePath(`${variant}:/${subPath}`);
+        if (pathExists(fullPath))  { return fullPath; }
     }
 
     return ''; // File not found in any of the checked paths
@@ -1974,7 +2058,15 @@ let gExit 		= {};
 let gDebug      = false;
 let gDbgTxt     = [];
 let gArt     	= getArtPaths();
-let gDevices    = getAvailableDevices();
+let gDevices    = [];
+let gDevicesLastRefresh = 0;
+function refreshAvailableDevices(force = false) {
+    const now = Date.now();
+    if (force || gDevices.length === 0 || (now - gDevicesLastRefresh) > 1500) {
+        gDevices = getAvailableDevices();
+        gDevicesLastRefresh = now;
+    }
+}
 let ScrCanvas 	= Screen.getMode();
 const ee_info   = System.getCPUInfo();
 

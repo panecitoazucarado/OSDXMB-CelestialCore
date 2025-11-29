@@ -14,6 +14,24 @@ const DashCatItems 	 = [];
 const DashPluginData = [];
 let DashIconsInfo = {};
 globalThis.DashIconNameToIndex = {};
+const CAT_ICON_NAMES = [
+    "CAT_HOME",
+    "CAT_SETTINGS",
+    "CAT_PICTURE",
+    "CAT_MUSIC",
+    "CAT_VIDEO",
+    "CAT_GAME",
+    "SET_PS2_APPS",
+    "CAT_NETWORK"
+];
+let CategoryIconIndices = [];
+
+function rebuildCategoryIconIndices() {
+    CategoryIconIndices = CAT_ICON_NAMES.map((name, index) => {
+        const idx = FindDashIcon(name);
+        return (idx >= 0) ? idx : index;
+    });
+}
 try {
     const iconsFile = std.loadFile(`${PATHS.XMB}dash/dash_icons.json`);
     if (iconsFile && iconsFile.length > 0) {
@@ -34,6 +52,110 @@ try {
     // Use empty object as fallback (silent fail for faster boot)
     DashIconsInfo = {};
 }
+rebuildCategoryIconIndices();
+
+const DevToolsOverlay = (() => {
+    let enabled = false;
+    let fps = 0;
+    let frameCount = 0;
+    let lastSample = Date.now();
+    const SAMPLE_MS = 350;
+    const STATUS_LEVELS = [
+        { min: 55, label: "Estable", color: Color.new(90, 255, 140, 235) },
+        { min: 48, label: "Suave", color: Color.new(210, 255, 140, 235) },
+        { min: 40, label: "Inestable", color: Color.new(255, 190, 90, 235) },
+        { min: 32, label: "Crítico", color: Color.new(255, 120, 70, 235) },
+        { min: 0, label: "Super Lento", color: Color.new(235, 70, 70, 235) }
+    ];
+
+    function getStatus(value) {
+        for (let i = 0; i < STATUS_LEVELS.length; i++) {
+            if (value >= STATUS_LEVELS[i].min) { return STATUS_LEVELS[i]; }
+        }
+        return STATUS_LEVELS[STATUS_LEVELS.length - 1];
+    }
+
+    const layerFn = function() {
+        if (!enabled || !FontObj || !FontObj.Font) { return; }
+        const now = Date.now();
+        frameCount++;
+        const elapsed = now - lastSample;
+        if (elapsed >= SAMPLE_MS) {
+            fps = frameCount / (elapsed / 1000);
+            frameCount = 0;
+            lastSample = now;
+        }
+        if (fps <= 0) { return; }
+
+        const status = getStatus(fps);
+        const font = FontObj.Font;
+        const prevScale = font.scale;
+        const prevColor = font.color;
+        const prevAlign = font.align;
+
+        font.scale = FontObj.SizeS;
+        font.align = Font.ALIGN_LEFT;
+
+        const lines = [
+            `FPS: ${fps.toFixed(0)}`,
+            `Estado: ${status.label}`
+        ];
+
+        let maxWidth = 0;
+        if (font.getTextSize) {
+            for (let i = 0; i < lines.length; i++) {
+                maxWidth = Math.max(maxWidth, font.getTextSize(lines[i]).width);
+            }
+        } else {
+            maxWidth = Math.max(lines[0].length, lines[1].length) * 8;
+        }
+
+        const padding = 6;
+        const lineHeight = Math.floor(16 * font.scale);
+        const boxWidth = maxWidth + padding * 2;
+        const boxHeight = lineHeight * lines.length + padding * 2;
+        const posX = 8;
+        const posY = 8;
+
+        Draw.rect(posX, posY, boxWidth, boxHeight, Color.new(0, 0, 0, 180));
+
+        const textX = posX + padding;
+        let textY = posY + padding;
+
+        font.color = Color.new(240, 240, 240, 245);
+        font.print(textX, textY, lines[0]);
+        textY += lineHeight;
+
+        font.color = status.color;
+        font.print(textX, textY, lines[1]);
+
+        font.scale = prevScale;
+        font.color = prevColor;
+        font.align = prevAlign;
+    };
+    layerFn.__Id = "DEVTOOLS";
+
+    function attach() {
+        if (!UICONST.LayersFg.includes(layerFn)) {
+            UICONST.LayersFg.push(layerFn);
+        }
+    }
+    function detach() {
+        UICONST.LayersFg = UICONST.LayersFg.filter(fn => fn !== layerFn);
+    }
+
+    return {
+        setEnabled(flag) {
+            if (flag === enabled) { return; }
+            enabled = flag;
+            if (enabled) { frameCount = 0; lastSample = Date.now(); attach(); }
+            else { detach(); }
+        },
+        isEnabled() { return enabled; }
+    };
+})();
+globalThis.DevToolsOverlay = DevToolsOverlay;
+rebuildCategoryIconIndices();
 
 //////////////////////////////////////////////////////////////////////////
 ///*				   			 Handlers							  *///
@@ -411,52 +533,64 @@ function DashCustomizableElementsInit() {
     ]
 
     for (let i = 0; i < elements.length; i++) {
-        let path = `${PATHS.XMB}dash/${elements[i]}`;
-        let customPath = `${PATHS.Theme}${UserConfig.Theme}/dash/${elements[i]}`;
-
-        if (std.exists(customPath)) {
-            path = customPath;
-        }
-
-        DashElements[objects[i]] = new Image(path);
-        DashElements[objects[i]].optimize();
-        DashElements[objects[i]].filter = LINEAR;
+        const basePath = `${PATHS.XMB}dash/${elements[i]}`;
+        const customPath = `${PATHS.Theme}${UserConfig.Theme}/dash/${elements[i]}`;
+        DashElements[objects[i]] = loadImageFromCandidates([customPath, basePath]);
     }
 
-    DashElements.ClockOutline.height = DashElements.ClockOutline.height >> 1;
+    if (DashElements.ClockOutline) {
+        DashElements.ClockOutline.height = DashElements.ClockOutline.height >> 1;
+    }
 }
 function DashElementsInit() {
 
     DashCustomizableElementsInit();
 
     // Context
-	DashElements.Context = new Image(`${PATHS.XMB}dash/dash_context.png`);
-	DashElements.Context.width = 275;
-	DashElements.Context.startx = 4;
-	DashElements.Context.starty = 2;
-	DashElements.CtxIco = new Image(`${PATHS.XMB}color/ctx.png`);
-	DashElements.CtxIco.width = 26;
-    DashElements.CtxIco.height = 26;
+	DashElements.Context = loadImageFromCandidates([
+        `${PATHS.Theme}${UserConfig.Theme}/dash/dash_context.png`,
+        `${PATHS.XMB}dash/dash_context.png`
+    ]);
+    if (DashElements.Context) {
+        DashElements.Context.width = 275;
+        DashElements.Context.startx = 4;
+        DashElements.Context.starty = 2;
+    }
+	DashElements.CtxIco = loadImageFromCandidates([
+        `${PATHS.Theme}${UserConfig.Theme}/dash/dash_context_icon.png`,
+        `${PATHS.XMB}color/ctx.png`
+    ]);
+    if (DashElements.CtxIco) {
+        DashElements.CtxIco.width = 26;
+        DashElements.CtxIco.height = 26;
+    }
 
     // Option Box
-    DashElements.OptionBox = new Image(`${PATHS.XMB}dash/dash_option_box.png`);
-    DashElements.OptionBox.height = 79;
-    DashElements.OptionIco = new Image(`${PATHS.Theme}Original/pads/triangle.png`);
-    DashElements.OptionIco.width = 14;
-    DashElements.OptionIco.height = 14;
-    DashElements.OptionIcoSquare = new Image(`${PATHS.Theme}Original/pads/square.png`);
-    DashElements.OptionIcoSquare.width = 14;
-    DashElements.OptionIcoSquare.height = 14;
-    DashElements.OptionIcoCross = new Image(`${PATHS.Theme}Original/pads/cross.png`);
-    DashElements.OptionIcoCross.width = 14;
-    DashElements.OptionIcoCross.height = 14;
+    DashElements.OptionBox = loadImageFromCandidates([
+        `${PATHS.Theme}${UserConfig.Theme}/dash/dash_option_box.png`,
+        `${PATHS.XMB}dash/dash_option_box.png`
+    ]);
+    if (DashElements.OptionBox) {
+        DashElements.OptionBox.height = 79;
+    }
+    DashElements.OptionIco = loadImageFromCandidates(`${PATHS.Theme}Original/pads/triangle.png`);
+    DashElements.OptionIcoSquare = loadImageFromCandidates(`${PATHS.Theme}Original/pads/square.png`);
+    DashElements.OptionIcoCross = loadImageFromCandidates(`${PATHS.Theme}Original/pads/cross.png`);
+    [DashElements.OptionIco, DashElements.OptionIcoSquare, DashElements.OptionIcoCross].forEach((ico) => {
+        if (ico) {
+            ico.width = 14;
+            ico.height = 14;
+        }
+    });
 
 	Object.values(DashElements).forEach((dashElem) => {
-		dashElem.optimize();
-		dashElem.filter = LINEAR;
+        if (dashElem && typeof dashElem.optimize === "function") {
+            dashElem.optimize();
+            if (!dashElem.filter) { dashElem.filter = LINEAR; }
+        }
 	});
 
-    DashElements.ClockIco.filter = NEAREST;
+    if (DashElements.ClockIco) { DashElements.ClockIco.filter = NEAREST; }
     DashElements.ItemFocus = false;
     PreloadDashIcons();
 }
@@ -465,21 +599,54 @@ function PreloadDashIcons() {
     function loadNext() {
         if (i >= DashIconsInfo.length) { return; }
         const info = DashIconsInfo[i];
-        let path = `${PATHS.Theme}${UserConfig.Theme}/icons/${info.path}`;
-        if (!std.exists(path)) { path = `${PATHS.Theme}Original/icons/${info.path}`; }
-        try {
-            const icn = new Image(path);
-            icn.optimize();
-            icn.filter = LINEAR;
-            DashIcons[i] = icn;
-        } catch (e) {
-            DashIcons[i] = null;
-        }
+        const themePath = `${PATHS.Theme}${UserConfig.Theme}/icons/${info.path}`;
+        const fallbackPath = `${PATHS.Theme}Original/icons/${info.path}`;
+        const icn = loadImageFromCandidates([themePath, fallbackPath], { filter: LINEAR, returnNull: true });
+        DashIcons[i] = icn;
         i++;
         if (i < DashIconsInfo.length) { Tasks.Push(loadNext); }
     }
     DashIcons.length = DashIconsInfo.length;
     if (DashIconsInfo.length > 0) { Tasks.Push(loadNext); }
+}
+
+//////////////////////////////////////////////////////////////////////////
+///*				   		 Asset Helpers							  *///
+//////////////////////////////////////////////////////////////////////////
+
+function createImageStub() {
+    return {
+        width: 0,
+        height: 0,
+        startx: 0,
+        endx: 0,
+        starty: 0,
+        angle: 0,
+        color: Color.new(0, 0, 0, 0),
+        filter: LINEAR,
+        optimize() {},
+        free() {},
+        ready() { return false; },
+        draw() {}
+    };
+}
+function loadImageFromCandidates(candidatePaths, options = {}) {
+    const paths = Array.isArray(candidatePaths) ? candidatePaths : [candidatePaths];
+    for (let i = 0; i < paths.length; i++) {
+        const resolved = resolveFilePath(paths[i]);
+        if (!resolved || !pathExists(resolved)) { continue; }
+        try {
+            const img = new Image(resolved);
+            img.optimize();
+            img.filter = ('filter' in options) ? options.filter : LINEAR;
+            return img;
+        } catch (e) {
+            xlog(`Image load failed: ${resolved}`);
+        }
+    }
+    if (options.returnNull) { return null; }
+    xlog(`Missing asset, fallback stub used: ${paths.join(", ")}`);
+    return createImageStub();
 }
 function DashUIConstantsInit() {
     UICONST.LayersBg = [];
@@ -562,6 +729,7 @@ function DashUICustomizationInit() {
     UICONST.Category.IconUnselectedColor = { R: 128, G: 128, B: 128 };
     UICONST.Context.Tint = false;
     UICONST.DialogInfo.LineCol = Color.new(196, 196, 196, 128);
+    if (UserConfig.DevToolsFPS) { DevToolsOverlay.setEnabled(true); }
 }
 function DashUInit() {
     // Constant Objects
@@ -950,7 +1118,7 @@ function DrawDashLoadIcon(Properties) {
 function IsCustomIcon(Properties) {
     if (!('CustomIcon' in Properties) || typeof Properties.CustomIcon !== "string") { return false; }
     Properties.CustomIcon = resolveFilePath(Properties.CustomIcon);
-    return std.exists(Properties.CustomIcon);
+    return pathExists(Properties.CustomIcon);
 }
 function DrawDashIcon(Properties) {
 	let Image = false;
@@ -1206,7 +1374,8 @@ function DrawUICategories() {
 		if (dif < -3) { continue; }
 		else if (dif > 7) { break; }
 
-		Icon.ID 		= i;
+        const catIconId = (CategoryIconIndices[i] !== undefined) ? CategoryIconIndices[i] : i;
+        Icon.ID 		= catIconId;
 		Icon.Alpha 		= 110;
 		Icon.Width 	    = UICONST.IcoUnselSize;
 		Icon.Height     = UICONST.IcoUnselSize;

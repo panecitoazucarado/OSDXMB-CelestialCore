@@ -20,6 +20,7 @@ const UserConfig = {
 	DisplayBg: false,
 	CustomBgImg: false,
 	Waves: true,
+    DevToolsFPS: false,
 	DateFormat: 0,
 	HourFormat: 0,
     Timezone: 0,
@@ -89,6 +90,7 @@ function ReadUserSettings() {
 	}
 	if ('Theme'		 in config) { UserConfig.Theme		  = config["Theme"];				}
 	if ('network'	 in config) { UserConfig.Network	  = parseInt(config["network"]);	}
+    if ('devfps'    in config) { UserConfig.DevToolsFPS = (config["devfps"] === "true"); }
 
 	if (!os.readdir(PATHS.Theme)[0].includes(UserConfig.Theme)) { UserConfig.Theme = "Original"; }
 

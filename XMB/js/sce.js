@@ -17,6 +17,10 @@ const SCEConfigParamTable = {
     TIMEZONE_OFFSET: 	{ Mask: 0xFFE00000, Shift: 0x15 }
 };
 const SCERomVerInfo = {};
+function sanitizeRomPath(path) {
+    if (typeof path !== "string") { return ""; }
+    return path.replace(/\\/g, "/").replace(/\/{2,}/g, "/");
+}
 
 /* Decode a byte array into a UTF-8 string */
 function utf8Decode(byteArray) {
@@ -61,6 +65,7 @@ function utf8Decode(byteArray) {
 
 /* Read an Entire File and get all its contents as a utf-8 string */
 function readFileAsUtf8(filepath) {
+    filepath = sanitizeRomPath(filepath);
 	let file = false;
 	let result = "";
 

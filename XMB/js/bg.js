@@ -200,17 +200,29 @@ function SetNewCustomBgImg(Path) {
     UserConfig.DisplayBg = true;
     const BgImage = BgElements.BgImage;
 
-    if (UserConfig.CustomBgImg !== Path || !BgImage.Image) {
+    const resolvedPath = resolveFilePath(Path);
+    if (!pathExists(resolvedPath)) {
+        xlog(`Custom background not found: ${Path}`);
+        return;
+    }
+
+    if (UserConfig.CustomBgImg !== resolvedPath || !BgImage.Image) {
 		// If there is already an Image being displayed, place it on Tmp and switch from one to another
         if (BgImage.Image) {
             BgImage.TmpImage = BgImage.Image;
             BgImage.TmpAlpha = 128;
 		}
 
-		UserConfig.CustomBgImg = Path;
-        BgImage.Image = new Image(UserConfig.CustomBgImg);
-        BgImage.Image.optimize();
-        BgImage.Image.filter = LINEAR;
+		UserConfig.CustomBgImg = resolvedPath;
+        try {
+            BgImage.Image = new Image(UserConfig.CustomBgImg);
+            BgImage.Image.optimize();
+            BgImage.Image.filter = LINEAR;
+        } catch (e) {
+            xlog(`Failed to load custom background: ${UserConfig.CustomBgImg}`);
+            BgImage.Image = false;
+            return;
+        }
         BgImage.Image.width = ScrCanvas.width;
         BgImage.Image.height = ScrCanvas.height;
 	}
